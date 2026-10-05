@@ -8,7 +8,9 @@
     "migrate:up": "npm run migrate -- up",
     "migrate:down": "npm run migrate -- down",
     "migrate:create": "npm run migrate -- create -j sql",
-    "db:verify": "node scripts/verify-schema.js"
+    "db:verify": "node scripts/verify-schema.js",
+    "dev": "npm run dev --prefix frontend",
+    "build": "npm run build --prefix frontend"
   },
   "keywords": [],
   "author": "",

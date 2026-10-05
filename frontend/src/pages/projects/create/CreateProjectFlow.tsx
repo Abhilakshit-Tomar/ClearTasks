@@ -62,14 +62,16 @@ const CreateProjectFlow = () => {
         name: projectData.title,
         description: projectData.description,
         deadline: projectData.deadline,
-        team_size: parseInt(projectData.teamSize),
+        team_size: parseInt(projectData.teamSize || '1') || 1,
         project_type: aiPlan?.projectType,
         difficulty: aiPlan?.difficulty,
-      });
+        tasks: aiPlan?.tasks || [],
+        milestones: aiPlan?.milestones || [],
+      } as any);
       setCreatedProjectId(project.id);
       setCurrentStep('SUCCESS');
-    } catch (error) {
-      toast.error('Failed to create project.');
+    } catch (error: any) {
+      toast.error(`Failed to create project: ${error.message || 'Unknown error'}`);
     }
   };
 

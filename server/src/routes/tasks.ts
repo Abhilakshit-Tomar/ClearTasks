@@ -7,8 +7,15 @@ const router = Router();
 // GET /api/tasks/:id
 router.get('/:id', async (req, res) => {
   try {
-    const result = await query('SELECT * FROM tasks WHERE id = $1', [req.params.id]);
-    if (result.rows.length === 0) return res.status(404).json({ success: false, error: { message: 'Task not found' } });
+    const userId = req.dbUser!.id;
+    const result = await query(
+      `SELECT t.* FROM tasks t
+       JOIN projects p ON t.project_id = p.id
+       LEFT JOIN project_members pm ON p.id = pm.project_id
+       WHERE t.id = $1 AND (p.created_by = $2 OR pm.user_id = $2)`,
+      [req.params.id, userId]
+    );
+    if (result.rows.length === 0) return res.status(404).json({ success: false, error: { message: 'Task not found or unauthorized' } });
     res.json({ success: true, data: result.rows[0] });
   } catch (error) {
     res.status(500).json({ success: false, error: { message: 'Internal server error' } });
@@ -26,6 +33,17 @@ router.put('/:id', async (req, res) => {
 
     const setCols = Object.keys(updates).map((k, i) => `${k} = $${i + 2}`).join(', ');
     const values = Object.values(updates);
+
+    const userId = req.dbUser!.id;
+    // verify authorization
+    const authCheck = await query(
+      `SELECT t.id FROM tasks t
+       JOIN projects p ON t.project_id = p.id
+       LEFT JOIN project_members pm ON p.id = pm.project_id
+       WHERE t.id = $1 AND (p.created_by = $2 OR pm.user_id = $2)`,
+      [req.params.id, userId]
+    );
+    if (authCheck.rows.length === 0) return res.status(403).json({ success: false, error: { message: 'Unauthorized' } });
 
     const result = await query(
       `UPDATE tasks SET ${setCols}, updated_at = CURRENT_TIMESTAMP WHERE id = $1 RETURNING *`,

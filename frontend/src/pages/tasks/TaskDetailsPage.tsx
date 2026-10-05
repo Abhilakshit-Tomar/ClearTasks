@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { ChevronLeft, Calendar, Clock, Flag, AlignLeft } from 'lucide-react';
+import { ChevronLeft, Calendar, Clock, Flag, AlignLeft, Trash } from 'lucide-react';
 import { toast } from 'sonner';
 
 const TaskDetailsPage = () => {
@@ -40,15 +40,32 @@ const TaskDetailsPage = () => {
     toast.success('Task status updated');
   };
 
+  const handleDelete = async () => {
+    if (!task || !projectId) return;
+    try {
+      await taskService.deleteTask(task.id);
+      toast.success('Task deleted');
+      navigate(`/projects/${projectId}/tasks`);
+    } catch (error) {
+      toast.error('Failed to delete task');
+    }
+  };
+
   if (loading) return <div className="space-y-4"><Skeleton className="h-10 w-32" /><Skeleton className="h-64" /></div>;
   if (!task) return <div>Task not found</div>;
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-      <Button variant="ghost" onClick={() => navigate(`/projects/${projectId}/tasks`)}>
-        <ChevronLeft className="h-4 w-4 mr-2" />
-        Back to Board
-      </Button>
+      <div className="flex justify-between items-center">
+        <Button variant="ghost" onClick={() => navigate(`/projects/${projectId}/tasks`)}>
+          <ChevronLeft className="h-4 w-4 mr-2" />
+          Back to Board
+        </Button>
+        <Button variant="destructive" size="sm" onClick={handleDelete}>
+          <Trash className="h-4 w-4 mr-2" />
+          Delete Task
+        </Button>
+      </div>
 
       <div className="flex flex-col md:flex-row gap-6">
         <div className="flex-1 space-y-6">

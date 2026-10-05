@@ -10,23 +10,33 @@ import tasksRouter from './routes/tasks';
 import milestonesRouter from './routes/milestones';
 import notificationsRouter from './routes/notifications';
 
+import fs from 'fs';
+
+if (fs.existsSync('.env.local')) {
+  dotenv.config({ path: '.env.local' });
+}
 dotenv.config();
 
 const app = express();
 
 app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:5173',
+  origin: true,
   credentials: true
 }));
 
 app.use(express.json({ limit: '5mb' }));
 
+import { clerkMiddleware, requireAuth } from '@clerk/express';
+import { attachDbUser } from './middleware/auth';
+
+app.use(clerkMiddleware());
+
 app.use('/api/health', healthRouter);
-app.use('/api/users', usersRouter);
-app.use('/api/projects', projectsRouter);
-app.use('/api/tasks', tasksRouter);
-app.use('/api/milestones', milestonesRouter);
-app.use('/api/notifications', notificationsRouter);
+app.use('/api/users', requireAuth(), attachDbUser, usersRouter);
+app.use('/api/projects', requireAuth(), attachDbUser, projectsRouter);
+app.use('/api/tasks', requireAuth(), attachDbUser, tasksRouter);
+app.use('/api/milestones', requireAuth(), attachDbUser, milestonesRouter);
+app.use('/api/notifications', requireAuth(), attachDbUser, notificationsRouter);
 
 // Global Error Handler
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {

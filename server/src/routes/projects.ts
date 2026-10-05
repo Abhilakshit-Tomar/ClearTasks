@@ -8,24 +8,16 @@ const router = Router();
 // GET /api/projects
 router.get('/', async (req, res) => {
   try {
-    const { userId } = req.query; // Temporary auth
+    const userId = req.dbUser!.id;
     
-    let sql = 'SELECT * FROM projects';
-    const params: any[] = [];
-    
-    if (userId) {
-      // Get projects where user is creator OR member
-      sql = `
-        SELECT DISTINCT p.* 
-        FROM projects p
-        LEFT JOIN project_members pm ON p.id = pm.project_id
-        WHERE p.created_by = $1 OR pm.user_id = $1
-        ORDER BY p.created_at DESC
-      `;
-      params.push(userId);
-    } else {
-      sql += ' ORDER BY created_at DESC';
-    }
+    let sql = `
+      SELECT DISTINCT p.* 
+      FROM projects p
+      LEFT JOIN project_members pm ON p.id = pm.project_id
+      WHERE p.created_by = $1 OR pm.user_id = $1
+      ORDER BY p.created_at DESC
+    `;
+    const params: any[] = [userId];
 
     const result = await query(sql, params);
     res.json({ success: true, data: result.rows });
@@ -38,9 +30,16 @@ router.get('/', async (req, res) => {
 // GET /api/projects/:id
 router.get('/:id', async (req, res) => {
   try {
-    const result = await query('SELECT * FROM projects WHERE id = $1', [req.params.id]);
+    const userId = req.dbUser!.id;
+    const result = await query(
+      `SELECT DISTINCT p.* 
+       FROM projects p
+       LEFT JOIN project_members pm ON p.id = pm.project_id
+       WHERE p.id = $1 AND (p.created_by = $2 OR pm.user_id = $2)`, 
+      [req.params.id, userId]
+    );
     if (result.rows.length === 0) {
-      return res.status(404).json({ success: false, error: { message: 'Project not found' } });
+      return res.status(404).json({ success: false, error: { message: 'Project not found or unauthorized' } });
     }
     res.json({ success: true, data: result.rows[0] });
   } catch (error) {
@@ -57,18 +56,34 @@ router.get('/', async (req, res) => {
 router.post('/', async (req, res) => {
   const client = await getClient();
   try {
+    req.body.created_by = req.dbUser!.id; // Inject authenticated user before validation
+
     const parsed = projectSchema.safeParse(req.body);
     if (!parsed.success) {
+      console.error('Validation failed:', parsed.error.issues);
       return res.status(400).json({ success: false, error: { message: 'Invalid data', details: parsed.error.issues } });
     }
 
     const data = parsed.data;
+
     await client.query('BEGIN');
     
     const projectResult = await client.query(
       `INSERT INTO projects (name, description, project_type, difficulty, status, deadline, created_by, team_size, preferred_technologies, instructor_requirements, advanced_features)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *`,
-      [data.name, data.description, data.project_type, data.difficulty, data.status, data.deadline, data.created_by, data.team_size, data.preferred_technologies, data.instructor_requirements, data.advanced_features]
+      [
+        data.name, 
+        data.description, 
+        data.project_type || null, 
+        data.difficulty || null, 
+        data.status, 
+        data.deadline, 
+        data.created_by, 
+        data.team_size, 
+        data.preferred_technologies || null, 
+        data.instructor_requirements || null, 
+        data.advanced_features || null
+      ]
     );
     const project = projectResult.rows[0];
 
@@ -77,6 +92,27 @@ router.post('/', async (req, res) => {
       `INSERT INTO project_members (project_id, user_id, role) VALUES ($1, $2, 'OWNER')`,
       [project.id, data.created_by]
     );
+
+    // Insert milestones if provided
+    if (req.body.milestones && Array.isArray(req.body.milestones)) {
+      for (const m of req.body.milestones) {
+        await client.query(
+          `INSERT INTO milestones (project_id, title, description, due_date, status) VALUES ($1, $2, $3, $4, $5)`,
+          [project.id, m.title, m.description || null, data.deadline, 'PENDING']
+        );
+      }
+    }
+
+    // Insert tasks if provided
+    if (req.body.tasks && Array.isArray(req.body.tasks)) {
+      for (const t of req.body.tasks) {
+        await client.query(
+          `INSERT INTO tasks (project_id, created_by, title, description, phase, status, priority, estimated_hours) 
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+          [project.id, data.created_by, t.title, t.description || null, t.phase || 'General', t.status || 'TODO', t.priority || 'MEDIUM', t.estimated_hours || 0]
+        );
+      }
+    }
 
     await client.query('COMMIT');
     res.status(201).json({ success: true, data: project });
@@ -95,6 +131,12 @@ router.put('/:id', async (req, res) => {
     const parsed = projectUpdateSchema.safeParse(req.body);
     if (!parsed.success) {
       return res.status(400).json({ success: false, error: { message: 'Invalid data', details: parsed.error.issues } });
+    }
+
+    const userId = req.dbUser!.id;
+    const memberCheck = await query(`SELECT role FROM project_members WHERE project_id = $1 AND user_id = $2`, [req.params.id, userId]);
+    if (memberCheck.rows.length === 0 || memberCheck.rows[0].role !== 'OWNER') {
+      return res.status(403).json({ success: false, error: { message: 'Forbidden: Requires OWNER role' }});
     }
 
     const updates = parsed.data;
@@ -119,6 +161,12 @@ router.put('/:id', async (req, res) => {
 // DELETE /api/projects/:id
 router.delete('/:id', async (req, res) => {
   try {
+    const userId = req.dbUser!.id;
+    const memberCheck = await query(`SELECT role FROM project_members WHERE project_id = $1 AND user_id = $2`, [req.params.id, userId]);
+    if (memberCheck.rows.length === 0 || memberCheck.rows[0].role !== 'OWNER') {
+      return res.status(403).json({ success: false, error: { message: 'Forbidden: Requires OWNER role' }});
+    }
+
     const result = await query('DELETE FROM projects WHERE id = $1 RETURNING id', [req.params.id]);
     if (result.rows.length === 0) return res.status(404).json({ success: false, error: { message: 'Project not found' } });
     res.json({ success: true, data: { id: result.rows[0].id } });
@@ -197,14 +245,16 @@ router.get('/:id/tasks', async (req, res) => {
 // POST task
 router.post('/:id/tasks', async (req, res) => {
   try {
+    req.body.created_by = req.dbUser!.id; // Inject authenticated user before validation
     const parsed = taskSchema.safeParse(req.body);
-    if (!parsed.success) return res.status(400).json({ success: false, error: { message: 'Invalid data' } });
+    if (!parsed.success) return res.status(400).json({ success: false, error: { message: 'Invalid data', details: parsed.error.issues } });
     
     const d = parsed.data;
+    const userId = req.dbUser!.id;
     const result = await query(
       `INSERT INTO tasks (project_id, milestone_id, assigned_to, created_by, title, description, phase, status, priority, due_date, estimated_hours)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *`,
-      [req.params.id, d.milestone_id, d.assigned_to, d.created_by, d.title, d.description, d.phase, d.status, d.priority, d.due_date, d.estimated_hours]
+      [req.params.id, d.milestone_id, d.assigned_to, userId, d.title, d.description, d.phase, d.status, d.priority, d.due_date, d.estimated_hours]
     );
     res.status(201).json({ success: true, data: result.rows[0] });
   } catch (error) {

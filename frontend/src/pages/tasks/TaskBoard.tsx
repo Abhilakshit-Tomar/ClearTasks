@@ -6,7 +6,12 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-
+import { Button } from '@/components/ui/button';
+import { Plus } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { toast } from 'sonner';
 const COLUMNS = [
   { id: 'TODO', title: 'To Do' },
   { id: 'IN_PROGRESS', title: 'In Progress' },
@@ -17,7 +22,28 @@ const TaskBoard = () => {
   const { projectId } = useParams<{ projectId: string }>();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
+  const [newTaskTitle, setNewTaskTitle] = useState('');
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
+  const handleCreateTask = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!projectId || !newTaskTitle.trim()) return;
+    try {
+      const task = await taskService.createTask(projectId, { 
+        title: newTaskTitle, 
+        phase: 'General', 
+        status: 'TODO', 
+        priority: 'MEDIUM',
+        estimated_hours: 1
+      });
+      setTasks([...tasks, task]);
+      setNewTaskTitle('');
+      setIsDialogOpen(false);
+      toast.success('Task created');
+    } catch (error) {
+      toast.error('Failed to create task');
+    }
+  };
   useEffect(() => {
     const fetchTasks = async () => {
       if (!projectId) return;
@@ -53,9 +79,41 @@ const TaskBoard = () => {
 
   return (
     <div className="h-full flex flex-col space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Task Board</h1>
-        <p className="text-muted-foreground">Manage your project tasks</p>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Task Board</h1>
+          <p className="text-muted-foreground">Manage your project tasks</p>
+        </div>
+        
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogTrigger asChild>
+            <Button>
+              <Plus className="h-4 w-4 mr-2" />
+              New Task
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Create Task</DialogTitle>
+              <DialogDescription>Add a new task to your project.</DialogDescription>
+            </DialogHeader>
+            <form onSubmit={handleCreateTask} className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="title">Task Title</Label>
+                <Input 
+                  id="title" 
+                  value={newTaskTitle} 
+                  onChange={(e) => setNewTaskTitle(e.target.value)} 
+                  placeholder="E.g., Design database schema" 
+                  required 
+                />
+              </div>
+              <div className="flex justify-end pt-4">
+                <Button type="submit">Create</Button>
+              </div>
+            </form>
+          </DialogContent>
+        </Dialog>
       </div>
 
       <div className="flex-1 overflow-x-auto pb-4">

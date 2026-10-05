@@ -1,16 +1,32 @@
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, FolderKanban, CheckSquare, Users, Flag, Bell, Settings, Menu, LogOut, ChevronLeft } from 'lucide-react';
+import { LayoutDashboard, FolderKanban, CheckSquare, Users, Flag, Bell, Settings, Menu, ChevronLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useState, useEffect } from 'react';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useAuth, useUser, UserButton } from '@clerk/clerk-react';
+import { Navigate } from 'react-router-dom';
+import { setTokenProvider } from '@/services/api';
 
 const DashboardLayout = () => {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
+  const { isLoaded, isSignedIn, getToken } = useAuth();
+  const { user } = useUser();
+
+  useEffect(() => {
+    setTokenProvider(getToken);
+  }, [getToken]);
 
   // Extract project ID from URL if inside a project
   const match = location.pathname.match(/\/projects\/([a-zA-Z0-9-]+)/);
   const projectId = match && match[1] !== 'new' ? match[1] : null;
+
+  if (isLoaded && !isSignedIn) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (!isLoaded) {
+    return <div className="h-screen w-full flex items-center justify-center">Loading...</div>;
+  }
 
   const closeSidebar = () => setSidebarOpen(false);
   
@@ -89,17 +105,11 @@ const DashboardLayout = () => {
         </nav>
         <div className="p-4 border-t">
           <div className="flex items-center gap-3 px-3 py-2">
-            <Avatar className="h-8 w-8">
-              <AvatarImage src="https://i.pravatar.cc/150?u=alice" />
-              <AvatarFallback>AS</AvatarFallback>
-            </Avatar>
+            <UserButton afterSignOutUrl="/" />
             <div className="flex-1 overflow-hidden">
-              <p className="text-sm font-medium truncate">Alice Smith</p>
-              <p className="text-xs text-muted-foreground truncate">alice@example.com</p>
+              <p className="text-sm font-medium truncate">{user?.fullName || user?.firstName || 'User'}</p>
+              <p className="text-xs text-muted-foreground truncate">{user?.primaryEmailAddress?.emailAddress}</p>
             </div>
-            <Link to="/">
-              <LogOut className="h-4 w-4 text-muted-foreground hover:text-foreground cursor-pointer" />
-            </Link>
           </div>
         </div>
       </aside>
@@ -132,11 +142,9 @@ const DashboardLayout = () => {
               </nav>
               <div className="p-4 border-t">
                 <div className="flex items-center gap-3 px-3 py-2">
-                  <Avatar className="h-8 w-8">
-                    <AvatarFallback>AS</AvatarFallback>
-                  </Avatar>
+                  <UserButton afterSignOutUrl="/" />
                   <div className="flex-1 overflow-hidden">
-                    <p className="text-sm font-medium truncate">Alice Smith</p>
+                    <p className="text-sm font-medium truncate">{user?.fullName || user?.firstName || 'User'}</p>
                   </div>
                 </div>
               </div>

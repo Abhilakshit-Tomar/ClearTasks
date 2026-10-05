@@ -6,9 +6,7 @@ const router = Router();
 // GET /api/notifications
 router.get('/', async (req, res) => {
   try {
-    const { userId } = req.query; // Temporary auth
-    if (!userId) return res.status(400).json({ success: false, error: { message: 'userId query parameter is required for now' } });
-
+    const userId = req.dbUser!.id;
     const result = await query('SELECT * FROM notifications WHERE user_id = $1 ORDER BY created_at DESC', [userId]);
     res.json({ success: true, data: result.rows });
   } catch (error) {

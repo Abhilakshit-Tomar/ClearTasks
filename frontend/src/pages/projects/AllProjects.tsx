@@ -3,9 +3,24 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Plus, FolderKanban, Calendar, Users } from 'lucide-react';
+import { Plus, FolderKanban, Calendar, Users, MoreVertical, Trash2, FolderOpen } from 'lucide-react';
 import { projectService } from '@/services/api';
 import { Project } from '@/types';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { toast } from 'sonner';
 
 const AllProjects = () => {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -24,6 +39,25 @@ const AllProjects = () => {
     };
     fetchProjects();
   }, []);
+
+  const [deleteDialogProject, setDeleteDialogProject] = useState<Project | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleDeleteProject = async () => {
+    if (!deleteDialogProject) return;
+    
+    setIsDeleting(true);
+    try {
+      await projectService.deleteProject(deleteDialogProject.id);
+      setProjects(projects.filter(p => p.id !== deleteDialogProject.id));
+      toast.success('Project deleted successfully');
+      setDeleteDialogProject(null);
+    } catch (error: any) {
+      toast.error(`Failed to delete project: ${error.message || 'Unknown error'}`);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   return (
     <div className="space-y-6 max-w-6xl mx-auto">
@@ -74,10 +108,32 @@ const AllProjects = () => {
             <Card key={project.id} className="flex flex-col hover:shadow-md transition-shadow cursor-pointer" onClick={() => window.location.href = `/projects/${project.id}`}>
               <CardHeader>
                 <div className="flex justify-between items-start">
-                  <CardTitle className="text-lg line-clamp-1">{project.name}</CardTitle>
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">
-                    {project.status}
-                  </span>
+                  <div>
+                    <CardTitle className="text-lg line-clamp-1 mb-1">{project.name}</CardTitle>
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">
+                      {project.status}
+                    </span>
+                  </div>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground -mt-1 -mr-2" onClick={(e) => e.stopPropagation()}>
+                        <MoreVertical className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+                      <DropdownMenuItem onClick={() => window.location.href = `/projects/${project.id}`}>
+                        <FolderOpen className="mr-2 h-4 w-4" />
+                        Open Project
+                      </DropdownMenuItem>
+                      <DropdownMenuItem 
+                        className="text-destructive focus:text-destructive"
+                        onClick={() => setDeleteDialogProject(project)}
+                      >
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        Delete Project
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
                 <CardDescription className="line-clamp-1">{project.project_type || 'General'}</CardDescription>
               </CardHeader>
@@ -98,6 +154,26 @@ const AllProjects = () => {
           ))}
         </div>
       )}
+
+      <Dialog open={!!deleteDialogProject} onOpenChange={(open) => !open && !isDeleting && setDeleteDialogProject(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Project?</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete "{deleteDialogProject?.name}"?
+              This will permanently delete the project, its tasks, milestones, members and related notifications.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteDialogProject(null)} disabled={isDeleting}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleDeleteProject} disabled={isDeleting}>
+              {isDeleting ? 'Deleting...' : 'Delete Project'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
