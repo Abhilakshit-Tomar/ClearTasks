@@ -1,8 +1,8 @@
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, FolderKanban, CheckSquare, Users, Flag, Bell, Settings, Menu, ChevronLeft } from 'lucide-react';
+import { LayoutDashboard, FolderKanban, CheckSquare, Users, Flag, Bell, Settings, Menu, ChevronLeft, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useState, useEffect } from 'react';
-import { useAuth, useUser, UserButton } from '@clerk/clerk-react';
+import { useAuth, useUser, UserButton, SignOutButton } from '@clerk/clerk-react';
 import { Navigate } from 'react-router-dom';
 import { setTokenProvider } from '@/services/api';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
@@ -112,6 +112,14 @@ const DashboardLayout = () => {
               <p className="text-xs text-muted-foreground truncate">{user?.primaryEmailAddress?.emailAddress}</p>
             </div>
           </div>
+          <div className="mt-2 px-3">
+            <SignOutButton>
+              <Button variant="outline" className="w-full flex items-center justify-center gap-2">
+                <LogOut className="h-4 w-4" />
+                Sign Out
+              </Button>
+            </SignOutButton>
+          </div>
         </div>
       </aside>
 
@@ -147,6 +155,14 @@ const DashboardLayout = () => {
                   <div className="flex-1 overflow-hidden">
                     <p className="text-sm font-medium truncate">{user?.fullName || user?.firstName || 'User'}</p>
                   </div>
+                </div>
+                <div className="mt-2 px-3">
+                  <SignOutButton>
+                    <Button variant="outline" className="w-full flex items-center justify-center gap-2">
+                      <LogOut className="h-4 w-4" />
+                      Sign Out
+                    </Button>
+                  </SignOutButton>
                 </div>
               </div>
             </div>

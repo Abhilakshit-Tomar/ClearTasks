@@ -92,11 +92,26 @@ router.post('/', async (req, res) => {
 
     // Insert milestones if provided
     if (req.body.milestones && Array.isArray(req.body.milestones)) {
-      for (const m of req.body.milestones) {
+      const totalMilestones = req.body.milestones.length;
+      const startDate = new Date();
+      // Use end of day for deadline
+      const deadlineDate = new Date(`${data.deadline}T23:59:59Z`);
+      const totalDuration = deadlineDate.getTime() - startDate.getTime();
+
+      for (let i = 0; i < totalMilestones; i++) {
+        const m = req.body.milestones[i];
+        
+        let mDateStr = data.deadline;
+        if (totalMilestones > 1 && totalDuration > 0) {
+          const fraction = (i + 1) / totalMilestones;
+          const mDate = new Date(startDate.getTime() + totalDuration * fraction);
+          mDateStr = mDate.toISOString().split('T')[0];
+        }
+
         const parsedM = milestoneSchema.safeParse({
           title: m.title,
           description: m.description,
-          due_date: m.due_date || data.deadline,
+          due_date: mDateStr,
           status: 'PENDING'
         });
         if (!parsedM.success) continue;
@@ -109,7 +124,21 @@ router.post('/', async (req, res) => {
 
     // Insert tasks if provided
     if (req.body.tasks && Array.isArray(req.body.tasks)) {
-      for (const t of req.body.tasks) {
+      const totalTasks = req.body.tasks.length;
+      const startDate = new Date();
+      const deadlineDate = new Date(`${data.deadline}T23:59:59Z`);
+      const totalDuration = deadlineDate.getTime() - startDate.getTime();
+
+      for (let i = 0; i < totalTasks; i++) {
+        const t = req.body.tasks[i];
+        
+        let tDateStr = data.deadline;
+        if (totalTasks > 1 && totalDuration > 0) {
+          const fraction = (i + 1) / totalTasks;
+          const tDate = new Date(startDate.getTime() + totalDuration * fraction);
+          tDateStr = tDate.toISOString().split('T')[0];
+        }
+
         const parsedT = taskSchema.safeParse({
           created_by: data.created_by,
           title: t.title,
@@ -117,13 +146,14 @@ router.post('/', async (req, res) => {
           phase: t.phase || 'General',
           status: t.status || 'TODO',
           priority: t.priority || 'MEDIUM',
+          due_date: tDateStr,
           estimated_hours: t.estimated_hours || 0,
         });
         if (!parsedT.success) continue;
         await client.query(
-          `INSERT INTO tasks (project_id, created_by, title, description, phase, status, priority, estimated_hours) 
-           VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
-          [project.id, parsedT.data.created_by, parsedT.data.title, parsedT.data.description || null, parsedT.data.phase, parsedT.data.status, parsedT.data.priority, parsedT.data.estimated_hours]
+          `INSERT INTO tasks (project_id, created_by, title, description, phase, status, priority, due_date, estimated_hours) 
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+          [project.id, parsedT.data.created_by, parsedT.data.title, parsedT.data.description || null, parsedT.data.phase, parsedT.data.status, parsedT.data.priority, parsedT.data.due_date, parsedT.data.estimated_hours]
         );
       }
     }
