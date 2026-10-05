@@ -1,0 +1,22 @@
+{
+  "name": "cleartasks",
+  "version": "1.0.0",
+  "description": "ClearTasks - AI-powered project/task management for student teams",
+  "private": true,
+  "scripts": {
+    "migrate": "node-pg-migrate --envPath .env.local -d DATABASE_URL_UNPOOLED -m migrations",
+    "migrate:up": "npm run migrate -- up",
+    "migrate:down": "npm run migrate -- down",
+    "migrate:create": "npm run migrate -- create -j sql",
+    "db:verify": "node scripts/verify-schema.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "dotenv": "^18.0.5",
+    "node-pg-migrate": "^9.0.0",
+    "pg": "^8.23.1"
+  }
+}
