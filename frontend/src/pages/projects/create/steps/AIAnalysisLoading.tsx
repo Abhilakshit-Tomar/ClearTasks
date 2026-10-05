@@ -24,11 +24,10 @@ const AIAnalysisLoading = ({ text }: Props) => {
     // Deterministic mock progress
     const interval = setInterval(() => {
       setProgress((prev) => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          return 100;
+        if (prev >= 99) {
+          return 99; // Cap at 99% until actual API completes
         }
-        return prev + (100 / (2000 / 100)); // Complete in ~2s
+        return prev + (100 / (15000 / 100)); // Complete in ~15s
       });
     }, 100);
     return () => clearInterval(interval);

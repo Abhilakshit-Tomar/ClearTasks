@@ -45,10 +45,10 @@ const Milestones = () => {
       </div>
 
       <div className="space-y-4 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-muted before:to-transparent">
-        {milestones.length === 0 ? (
+        {(milestones || []).length === 0 ? (
           <div className="text-center py-10 text-muted-foreground">No milestones defined.</div>
         ) : (
-          milestones.map((milestone) => (
+          (milestones || []).map((milestone) => (
             <div key={milestone.id} className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
               <div className="flex items-center justify-center w-10 h-10 rounded-full border-4 border-background bg-primary/20 text-primary shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2">
                 <Flag className="h-4 w-4" />

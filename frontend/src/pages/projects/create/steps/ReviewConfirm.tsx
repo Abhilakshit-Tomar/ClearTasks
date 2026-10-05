@@ -63,7 +63,7 @@ const ReviewConfirm = ({ plan, projectData, onConfirm, onBack }: Props) => {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Total Tasks</p>
-                <p className="font-medium">{plan.tasks.length}</p>
+                <p className="font-medium">{plan.estimatedTasks}</p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Milestones</p>
@@ -72,7 +72,7 @@ const ReviewConfirm = ({ plan, projectData, onConfirm, onBack }: Props) => {
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Phases</p>
-              <p className="font-medium">{plan.phases.join(', ')}</p>
+              <p className="font-medium">{plan.phases.map(p => p.name).join(', ')}</p>
             </div>
           </CardContent>
         </Card>

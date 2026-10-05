@@ -89,11 +89,19 @@ export interface AIProjectPlan {
   projectType: string;
   difficulty: string;
   estimatedTasks: number;
-  timeline: string;
-  modules: string[];
-  phases: string[];
-  tasks: Partial<Task>[];
-  milestones: Partial<Milestone>[];
-  assignments: { taskId: string; roleOrSkillRequired: string }[];
-  dependencies: { taskId: string; dependsOnTaskId: string }[];
+  timelineDays: number;
+  modules: { name: string; description: string }[];
+  phases: {
+    name: string;
+    order: number;
+    tasks: {
+      title: string;
+      description: string;
+      priority: TaskPriority;
+      estimatedHours: number;
+      dependsOn: string[];
+    }[];
+  }[];
+  milestones: { title: string; description: string; relativeDay: number }[];
+  assignments: { taskTitle: string; memberPlaceholder: string }[];
 }

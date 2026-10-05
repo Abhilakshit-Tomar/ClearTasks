@@ -26,8 +26,8 @@ const ProjectDashboard = () => {
           milestoneService.getMilestones(projectId)
         ]);
         setProject(proj || null);
-        setTasks(t);
-        setMilestones(m);
+        setTasks(t || []);
+        setMilestones(m || []);
       } catch (error) {
         console.error("Error fetching project data", error);
       } finally {
@@ -48,15 +48,36 @@ const ProjectDashboard = () => {
     </div>
   );
 
-  if (!project) return <div>Project not found</div>;
+  if (!project) return (
+    <div className="flex h-full items-center justify-center p-8">
+      <div className="text-center space-y-4 max-w-md p-8 border border-red-500 bg-red-50 rounded-xl">
+        <h2 className="text-2xl font-bold text-red-700">Project Not Found</h2>
+        <p className="text-red-600">The project could not be loaded. Please ensure you have the correct link and permissions.</p>
+        <Button onClick={() => window.location.href = '/dashboard'}>Return to Dashboard</Button>
+      </div>
+    </div>
+  );
 
-  const completedTasks = tasks.filter(t => t.status === 'DONE').length;
-  const totalTasks = tasks.length;
-  const progressPercent = totalTasks === 0 ? 0 : Math.round((completedTasks / totalTasks) * 100);
+  const completedTasks = (tasks || []).filter(t => t?.status === 'DONE').length;
+  const totalTasks = (tasks || []).length;
+  const progressPercent = totalTasks === 0 ? 0 : (Math.round((completedTasks / totalTasks) * 100) || 0);
 
-  const upcomingMilestone = milestones
-    .filter(m => m.status !== 'COMPLETED')
-    .sort((a, b) => new Date(a.due_date).getTime() - new Date(b.due_date).getTime())[0];
+  const upcomingMilestone = (milestones || [])
+    .filter(m => m?.status !== 'COMPLETED' && m?.due_date)
+    .sort((a, b) => {
+      const timeA = new Date(a.due_date).getTime();
+      const timeB = new Date(b.due_date).getTime();
+      return (isNaN(timeA) ? 0 : timeA) - (isNaN(timeB) ? 0 : timeB);
+    })[0];
+    
+  const safeDate = (dateStr: any) => {
+    try {
+      const d = new Date(dateStr);
+      return isNaN(d.getTime()) ? 'Invalid Date' : d.toLocaleDateString();
+    } catch {
+      return 'Invalid Date';
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -90,7 +111,7 @@ const ProjectDashboard = () => {
           <CardContent className="p-6 flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-muted-foreground">Deadline</p>
-              <h3 className="text-xl font-bold">{new Date(project.deadline).toLocaleDateString()}</h3>
+              <h3 className="text-xl font-bold">{safeDate(project.deadline)}</h3>
             </div>
             <div className="h-10 w-10 bg-primary/10 rounded-full flex items-center justify-center text-primary">
               <Calendar className="h-5 w-5" />
@@ -164,7 +185,7 @@ const ProjectDashboard = () => {
                 <p className="text-sm text-muted-foreground">{upcomingMilestone.description}</p>
                 <div className="flex justify-between text-sm pt-4">
                   <span className="font-medium text-destructive">
-                    Due: {new Date(upcomingMilestone.due_date).toLocaleDateString()}
+                    Due: {safeDate(upcomingMilestone.due_date)}
                   </span>
                   <span className="text-muted-foreground">{upcomingMilestone.status}</span>
                 </div>

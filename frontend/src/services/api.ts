@@ -1,5 +1,4 @@
 import { Project, Task, ProjectMember, Milestone, Notification, AIProjectPlan } from '../types';
-import { mockAIPlan } from '../data/mockData';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
 
@@ -8,8 +7,9 @@ export const setTokenProvider = (provider: () => Promise<string | null>) => {
   getAuthToken = provider;
 };
 
-async function fetchApi<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+async function fetchApi<T>(endpoint: string, options: RequestInit & { timeout?: number } = {}): Promise<T> {
   const url = `${API_BASE_URL}${endpoint}`;
+  const { timeout = 30000, ...fetchOptions } = options;
   
   let token = '';
   if (getAuthToken) {
@@ -20,22 +20,34 @@ async function fetchApi<T>(endpoint: string, options: RequestInit = {}): Promise
 
   console.log('Sending request to', url, 'with token length:', token.length);
 
-  const response = await fetch(url, {
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-      ...options.headers,
-    },
-  });
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeout);
 
-  const data = await response.json();
-  
-  if (!response.ok || !data.success) {
-    throw new Error(data.error?.message || 'API request failed');
+  try {
+    const response = await fetch(url, {
+      ...fetchOptions,
+      signal: controller.signal,
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+        ...fetchOptions.headers,
+      },
+    });
+
+    clearTimeout(id);
+    const data = await response.json();
+    
+    if (!response.ok || !data.success) {
+      throw new Error(data.error?.message || 'API request failed');
+    }
+    
+    return data.data;
+  } catch (error: any) {
+    if (error.name === 'AbortError') {
+      throw new Error('AI request timed out');
+    }
+    throw error;
   }
-  
-  return data.data;
 }
 
 export const projectService = {
@@ -77,20 +89,20 @@ export const notificationService = {
   markAsRead: (id: string) => fetchApi<Notification>(`/notifications/${id}/read`, { method: 'PUT' }),
 };
 
-// AI service remains mocked for Step 3C
+// AI service with real endpoints
 export const aiService = {
-  async analyzeProject(_details: any): Promise<AIProjectPlan> {
-    await new Promise(r => setTimeout(r, 2000));
-    return mockAIPlan;
+  async analyzeProject(details: any): Promise<AIProjectPlan> {
+    return fetchApi<AIProjectPlan>('/ai/analyze', {
+      method: 'POST',
+      body: JSON.stringify(details),
+      timeout: 60000,
+    });
   },
-  async improvePlan(_details: any): Promise<AIProjectPlan> {
-    await new Promise(r => setTimeout(r, 2000));
-    return {
-      ...mockAIPlan,
-      tasks: [
-        ...mockAIPlan.tasks,
-        { title: 'Add Advanced Analytics', phase: 'Development', priority: 'MEDIUM', estimated_hours: 12 }
-      ]
-    };
+  async improvePlan(details: any): Promise<AIProjectPlan> {
+    return fetchApi<AIProjectPlan>('/ai/improve-plan', {
+      method: 'POST',
+      body: JSON.stringify(details),
+      timeout: 60000,
+    });
   }
 };

@@ -39,7 +39,7 @@ const InitialPlanReview = ({ plan, onImprove, onProceed, isImproved = false }: P
         <Card>
           <CardHeader className="pb-2">
             <CardDescription>Timeline</CardDescription>
-            <CardTitle className="text-lg">{plan.timeline}</CardTitle>
+            <CardTitle className="text-lg">{plan.timelineDays} Days</CardTitle>
           </CardHeader>
         </Card>
       </div>
@@ -52,13 +52,13 @@ const InitialPlanReview = ({ plan, onImprove, onProceed, isImproved = false }: P
           <div>
             <h4 className="text-sm font-medium mb-2">Suggested Phases</h4>
             <div className="flex flex-wrap gap-2">
-              {plan.phases.map(p => <Badge key={p} variant="secondary">{p}</Badge>)}
+              {plan.phases.map(p => <Badge key={p.name} variant="secondary">{p.name}</Badge>)}
             </div>
           </div>
           <div>
             <h4 className="text-sm font-medium mb-2">Identified Modules</h4>
             <div className="flex flex-wrap gap-2">
-              {plan.modules.map(m => <Badge key={m} variant="outline">{m}</Badge>)}
+              {plan.modules.map(m => <Badge key={m.name} variant="outline" title={m.description}>{m.name}</Badge>)}
             </div>
           </div>
         </CardContent>
@@ -66,23 +66,23 @@ const InitialPlanReview = ({ plan, onImprove, onProceed, isImproved = false }: P
 
       <Card>
         <CardHeader>
-          <CardTitle>Generated Tasks ({plan.tasks.length})</CardTitle>
+          <CardTitle>Generated Tasks</CardTitle>
           <CardDescription>Sample of tasks generated for the board.</CardDescription>
         </CardHeader>
         <CardContent>
           <ul className="space-y-3">
-            {plan.tasks.slice(0, 4).map((t, idx) => (
+            {plan.phases.flatMap(p => p.tasks.map(t => ({...t, phase: p.name}))).slice(0, 4).map((t, idx) => (
               <li key={idx} className="flex justify-between items-center p-3 rounded-lg border bg-muted/30">
                 <div className="flex items-center gap-3">
                   <Badge variant="outline">{t.phase}</Badge>
                   <span className="font-medium">{t.title}</span>
                 </div>
-                <div className="text-sm text-muted-foreground">{t.estimated_hours}h</div>
+                <div className="text-sm text-muted-foreground">{t.estimatedHours}h</div>
               </li>
             ))}
-            {plan.tasks.length > 4 && (
+            {plan.estimatedTasks > 4 && (
               <li className="text-center text-sm text-muted-foreground pt-2">
-                + {plan.tasks.length - 4} more tasks
+                + {plan.estimatedTasks - 4} more tasks
               </li>
             )}
           </ul>

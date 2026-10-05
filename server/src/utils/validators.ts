@@ -50,3 +50,22 @@ export const taskSchema = z.object({
 });
 
 export const taskUpdateSchema = taskSchema.partial();
+
+export const aiAnalyzeSchema = z.object({
+  projectTitle: z.string().min(1).max(200),
+  description: z.string().min(1).max(5000),
+  teamSize: z.number().int().min(1),
+  deadline: z.string().refine((val) => !isNaN(Date.parse(val)), { message: 'Invalid date format' }),
+});
+
+export const aiImproveSchema = aiAnalyzeSchema.extend({
+  originalPlan: z.any(),
+  improvements: z.object({
+    similarSkillLevels: z.boolean().optional(),
+    assignByStrengths: z.boolean().optional(),
+    teamSkills: z.array(z.object({ name: z.string(), skills: z.array(z.string()) })).optional(),
+    preferredTechnology: z.string().optional(),
+    instructorRequirements: z.string().optional(),
+    advancedFeatures: z.array(z.string()).optional(),
+  })
+});

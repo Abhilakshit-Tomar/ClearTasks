@@ -26,11 +26,23 @@ const CreateProjectFlow = () => {
     setCurrentStep('ANALYZING');
     
     try {
-      const plan = await aiService.analyzeProject(data);
+      const aiPayload = {
+        projectTitle: data.title,
+        description: data.description,
+        teamSize: parseInt(data.teamSize, 10) || 1,
+        deadline: data.deadline
+      };
+      console.log('[AI FLOW] submit started');
+      console.log('[AI FLOW] analyze request started');
+      const plan = await aiService.analyzeProject(aiPayload);
+      console.log('[AI FLOW] analyze response received');
+      console.log('[AI FLOW] plan received', plan);
+      console.log('[AI FLOW] navigating to Initial AI Plan');
       setAiPlan(plan);
       setCurrentStep('INITIAL_PLAN');
-    } catch (error) {
-      toast.error('Failed to analyze project. Please try again.');
+    } catch (error: any) {
+      console.error("ANALYSIS ERROR:", error);
+      toast.error(`Error: ${error.message || 'Failed to analyze project. Please try again.'}`);
       setCurrentStep('INFO');
     }
   };
@@ -42,7 +54,26 @@ const CreateProjectFlow = () => {
   const handleImproveSubmit = async (data: any) => {
     setCurrentStep('ANALYZING'); // We can reuse the loading screen or make a new one, but let's use a specific state for text
     try {
-      const improved = await aiService.improvePlan({ ...projectData, ...data });
+      const improvements = {
+        similarSkillLevels: false,
+        assignByStrengths: !!data.teamSkills,
+        preferredTechnology: data.techPreferences || '',
+        instructorRequirements: data.instructorRequirements || '',
+        // The frontend form provides strings, we split them to match the backend array schema
+        advancedFeatures: data.advancedFeatures ? data.advancedFeatures.split(',').map((s: string) => s.trim()) : [],
+        // The backend expects an array of objects for teamSkills, we pass the raw string into a single 'Team' placeholder to satisfy the schema but convey the prompt
+        teamSkills: data.teamSkills ? [{ name: 'Team', skills: [data.teamSkills] }] : []
+      };
+
+      const improvePayload = {
+        projectTitle: projectData.title,
+        description: projectData.description,
+        teamSize: parseInt(projectData.teamSize, 10) || 1,
+        deadline: projectData.deadline,
+        originalPlan: aiPlan,
+        improvements: improvements
+      };
+      const improved = await aiService.improvePlan(improvePayload);
       setAiPlan(improved);
       setCurrentStep('IMPROVED_PLAN');
     } catch (error) {
@@ -65,8 +96,14 @@ const CreateProjectFlow = () => {
         team_size: parseInt(projectData.teamSize || '1') || 1,
         project_type: aiPlan?.projectType,
         difficulty: aiPlan?.difficulty,
-        tasks: aiPlan?.tasks || [],
-        milestones: aiPlan?.milestones || [],
+        tasks: aiPlan?.phases.flatMap(p => p.tasks.map(t => ({
+          title: t.title,
+          description: t.description,
+          phase: p.name,
+          priority: t.priority,
+          estimated_hours: t.estimatedHours
+        }))) || [],
+        milestones: aiPlan?.milestones.map(m => ({ title: m.title, description: m.description })) || [],
       } as any);
       setCreatedProjectId(project.id);
       setCurrentStep('SUCCESS');

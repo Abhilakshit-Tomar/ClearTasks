@@ -187,20 +187,22 @@ export const mockAIPlan: AIProjectPlan = {
   projectType: 'Web Application',
   difficulty: 'Medium',
   estimatedTasks: 12,
-  timeline: '4 weeks',
-  modules: ['Authentication', 'User Dashboard', 'Admin Panel'],
-  phases: ['Planning', 'Design', 'Development', 'Testing'],
+  timelineDays: 28,
+  modules: [
+    { name: 'Authentication', description: 'User login' },
+    { name: 'User Dashboard', description: 'Dashboard view' }
+  ],
+  phases: [
+    {
+      name: 'Planning',
+      order: 1,
+      tasks: [
+        { title: 'Setup Repo', description: 'init git', priority: 'HIGH', estimatedHours: 2, dependsOn: [] }
+      ]
+    }
+  ],
   milestones: [
-    { title: 'Planning Phase', description: 'Requirements gathered', due_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() },
-    { title: 'MVP Development', description: 'Core features built', due_date: new Date(Date.now() + 21 * 24 * 60 * 60 * 1000).toISOString() },
-    { title: 'Final Testing', description: 'Bug fixes and polish', due_date: new Date(Date.now() + 28 * 24 * 60 * 60 * 1000).toISOString() },
+    { title: 'Planning Phase', description: 'Requirements gathered', relativeDay: 7 }
   ],
-  tasks: [
-    { title: 'Setup Repo', phase: 'Planning', priority: 'HIGH', estimated_hours: 2 },
-    { title: 'Design DB Schema', phase: 'Planning', priority: 'HIGH', estimated_hours: 4 },
-    { title: 'Create Wireframes', phase: 'Design', priority: 'MEDIUM', estimated_hours: 8 },
-    { title: 'Implement Auth', phase: 'Development', priority: 'HIGH', estimated_hours: 10 },
-  ],
-  assignments: [],
-  dependencies: []
+  assignments: []
 };

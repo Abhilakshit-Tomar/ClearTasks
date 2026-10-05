@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import { useAuth, useUser, UserButton } from '@clerk/clerk-react';
 import { Navigate } from 'react-router-dom';
 import { setTokenProvider } from '@/services/api';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 const DashboardLayout = () => {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
@@ -20,6 +21,11 @@ const DashboardLayout = () => {
   const match = location.pathname.match(/\/projects\/([a-zA-Z0-9-]+)/);
   const projectId = match && match[1] !== 'new' ? match[1] : null;
 
+  // Reset scroll on navigate
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location.pathname]);
+
   if (isLoaded && !isSignedIn) {
     return <Navigate to="/login" replace />;
   }
@@ -29,11 +35,6 @@ const DashboardLayout = () => {
   }
 
   const closeSidebar = () => setSidebarOpen(false);
-  
-  // Reset scroll on navigate
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [location.pathname]);
 
   const navItems = projectId ? [
     { name: 'Overview', path: `/projects/${projectId}`, icon: LayoutDashboard },
@@ -153,7 +154,9 @@ const DashboardLayout = () => {
         )}
 
         <div className="flex-1 overflow-y-auto p-4 md:p-8">
-          <Outlet />
+          <ErrorBoundary>
+            <Outlet />
+          </ErrorBoundary>
         </div>
       </main>
     </div>

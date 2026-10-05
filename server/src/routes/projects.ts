@@ -48,10 +48,7 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// POST /api/projects
-router.get('/', async (req, res) => {
-  // Already defined GET above, moving to POST
-});
+
 
 router.post('/', async (req, res) => {
   const client = await getClient();
@@ -96,9 +93,16 @@ router.post('/', async (req, res) => {
     // Insert milestones if provided
     if (req.body.milestones && Array.isArray(req.body.milestones)) {
       for (const m of req.body.milestones) {
+        const parsedM = milestoneSchema.safeParse({
+          title: m.title,
+          description: m.description,
+          due_date: m.due_date || data.deadline,
+          status: 'PENDING'
+        });
+        if (!parsedM.success) continue;
         await client.query(
           `INSERT INTO milestones (project_id, title, description, due_date, status) VALUES ($1, $2, $3, $4, $5)`,
-          [project.id, m.title, m.description || null, data.deadline, 'PENDING']
+          [project.id, parsedM.data.title, parsedM.data.description || null, parsedM.data.due_date, parsedM.data.status]
         );
       }
     }
@@ -106,10 +110,20 @@ router.post('/', async (req, res) => {
     // Insert tasks if provided
     if (req.body.tasks && Array.isArray(req.body.tasks)) {
       for (const t of req.body.tasks) {
+        const parsedT = taskSchema.safeParse({
+          created_by: data.created_by,
+          title: t.title,
+          description: t.description,
+          phase: t.phase || 'General',
+          status: t.status || 'TODO',
+          priority: t.priority || 'MEDIUM',
+          estimated_hours: t.estimated_hours || 0,
+        });
+        if (!parsedT.success) continue;
         await client.query(
           `INSERT INTO tasks (project_id, created_by, title, description, phase, status, priority, estimated_hours) 
            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
-          [project.id, data.created_by, t.title, t.description || null, t.phase || 'General', t.status || 'TODO', t.priority || 'MEDIUM', t.estimated_hours || 0]
+          [project.id, parsedT.data.created_by, parsedT.data.title, parsedT.data.description || null, parsedT.data.phase, parsedT.data.status, parsedT.data.priority, parsedT.data.estimated_hours]
         );
       }
     }

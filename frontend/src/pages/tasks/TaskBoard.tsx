@@ -122,11 +122,11 @@ const TaskBoard = () => {
             <div key={col.id} className="w-80 flex flex-col bg-muted/30 rounded-lg p-4">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="font-semibold text-sm uppercase tracking-wider">{col.title}</h3>
-                <Badge variant="secondary">{tasks.filter(t => t.status === col.id).length}</Badge>
+                <Badge variant="secondary">{(tasks || []).filter(t => t?.status === col.id).length}</Badge>
               </div>
               
               <div className="flex-1 space-y-3 overflow-y-auto min-h-[500px]">
-                {tasks.filter(t => t.status === col.id).map(task => (
+                {(tasks || []).filter(t => t?.status === col.id).map(task => (
                   <Link key={task.id} to={`/projects/${projectId}/tasks/${task.id}`} className="block">
                     <Card className="hover:border-primary transition-colors cursor-pointer">
                       <CardContent className="p-4 space-y-3">
