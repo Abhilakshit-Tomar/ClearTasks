@@ -260,24 +260,50 @@ Analyze this project and generate a structured project plan.`;
     console.log(`[AI API] Gemini response parsed`);
     
     console.log(`[AI API] deadline validation started`);
-    // Post-generation validation
+    // Post-generation validation & Proportional Scaling
     if (plan.timelineDays > availableDays) {
+      const scaleFactor = availableDays / plan.timelineDays;
       plan.timelineDays = availableDays;
-    }
-    if (plan.milestones && Array.isArray(plan.milestones)) {
-      plan.milestones.forEach((m: any) => {
-        if (m.relativeDay > availableDays) m.relativeDay = availableDays;
-      });
-    }
-    if (plan.phases && Array.isArray(plan.phases)) {
-      plan.phases.forEach((p: any) => {
-        if (p.tasks && Array.isArray(p.tasks)) {
-          p.tasks.forEach((t: any) => {
-            if (t.relativeStartDay > availableDays) t.relativeStartDay = availableDays;
-            if (t.relativeDueDay > availableDays) t.relativeDueDay = availableDays;
-          });
-        }
-      });
+      
+      if (plan.milestones && Array.isArray(plan.milestones)) {
+        plan.milestones.forEach((m: any) => {
+          m.relativeDay = Math.max(1, Math.floor(m.relativeDay * scaleFactor));
+          if (m.relativeDay > availableDays) m.relativeDay = availableDays;
+        });
+      }
+      
+      if (plan.phases && Array.isArray(plan.phases)) {
+        plan.phases.forEach((p: any) => {
+          if (p.tasks && Array.isArray(p.tasks)) {
+            p.tasks.forEach((t: any) => {
+              t.relativeStartDay = Math.max(1, Math.floor(t.relativeStartDay * scaleFactor));
+              t.relativeDueDay = Math.max(1, Math.floor(t.relativeDueDay * scaleFactor));
+              
+              if (t.relativeStartDay > availableDays) t.relativeStartDay = availableDays;
+              if (t.relativeDueDay > availableDays) t.relativeDueDay = availableDays;
+              // Ensure due is not before start
+              if (t.relativeDueDay < t.relativeStartDay) t.relativeDueDay = t.relativeStartDay;
+            });
+          }
+        });
+      }
+    } else {
+      // Basic clamping if it somehow exceeds availableDays but timelineDays was reported as valid
+      if (plan.milestones && Array.isArray(plan.milestones)) {
+        plan.milestones.forEach((m: any) => {
+          if (m.relativeDay > availableDays) m.relativeDay = availableDays;
+        });
+      }
+      if (plan.phases && Array.isArray(plan.phases)) {
+        plan.phases.forEach((p: any) => {
+          if (p.tasks && Array.isArray(p.tasks)) {
+            p.tasks.forEach((t: any) => {
+              if (t.relativeStartDay > availableDays) t.relativeStartDay = availableDays;
+              if (t.relativeDueDay > availableDays) t.relativeDueDay = availableDays;
+            });
+          }
+        });
+      }
     }
     console.log(`[AI API] deadline validation passed`);
     console.log(`[AI API] sending response`);
@@ -349,24 +375,48 @@ Provide the improved project plan.`;
 
     const plan = await generateWithFallback(aiClient, systemPrompt, userPrompt, '/improve-plan');
 
-    // Post-generation validation
+    // Post-generation validation & Proportional Scaling
     if (plan.timelineDays > availableDays) {
+      const scaleFactor = availableDays / plan.timelineDays;
       plan.timelineDays = availableDays;
-    }
-    if (plan.milestones && Array.isArray(plan.milestones)) {
-      plan.milestones.forEach((m: any) => {
-        if (m.relativeDay > availableDays) m.relativeDay = availableDays;
-      });
-    }
-    if (plan.phases && Array.isArray(plan.phases)) {
-      plan.phases.forEach((p: any) => {
-        if (p.tasks && Array.isArray(p.tasks)) {
-          p.tasks.forEach((t: any) => {
-            if (t.relativeStartDay > availableDays) t.relativeStartDay = availableDays;
-            if (t.relativeDueDay > availableDays) t.relativeDueDay = availableDays;
-          });
-        }
-      });
+      
+      if (plan.milestones && Array.isArray(plan.milestones)) {
+        plan.milestones.forEach((m: any) => {
+          m.relativeDay = Math.max(1, Math.floor(m.relativeDay * scaleFactor));
+          if (m.relativeDay > availableDays) m.relativeDay = availableDays;
+        });
+      }
+      
+      if (plan.phases && Array.isArray(plan.phases)) {
+        plan.phases.forEach((p: any) => {
+          if (p.tasks && Array.isArray(p.tasks)) {
+            p.tasks.forEach((t: any) => {
+              t.relativeStartDay = Math.max(1, Math.floor(t.relativeStartDay * scaleFactor));
+              t.relativeDueDay = Math.max(1, Math.floor(t.relativeDueDay * scaleFactor));
+              
+              if (t.relativeStartDay > availableDays) t.relativeStartDay = availableDays;
+              if (t.relativeDueDay > availableDays) t.relativeDueDay = availableDays;
+              if (t.relativeDueDay < t.relativeStartDay) t.relativeDueDay = t.relativeStartDay;
+            });
+          }
+        });
+      }
+    } else {
+      if (plan.milestones && Array.isArray(plan.milestones)) {
+        plan.milestones.forEach((m: any) => {
+          if (m.relativeDay > availableDays) m.relativeDay = availableDays;
+        });
+      }
+      if (plan.phases && Array.isArray(plan.phases)) {
+        plan.phases.forEach((p: any) => {
+          if (p.tasks && Array.isArray(p.tasks)) {
+            p.tasks.forEach((t: any) => {
+              if (t.relativeStartDay > availableDays) t.relativeStartDay = availableDays;
+              if (t.relativeDueDay > availableDays) t.relativeDueDay = availableDays;
+            });
+          }
+        });
+      }
     }
 
     console.log(`[AI] Final Result for /improve-plan: Returned improved plan successfully without fallback. TimelineDays=${plan.timelineDays}/${availableDays}`);

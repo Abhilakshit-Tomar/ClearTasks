@@ -8,17 +8,20 @@ interface Props {
 
 const ProjectSuccess = ({ projectId }: Props) => {
   return (
-    <div className="flex flex-col items-center justify-center py-20 px-4 text-center">
-      <div className="h-20 w-20 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mb-6">
-        <CheckCircle2 className="h-10 w-10 text-green-600 dark:text-green-500" />
+    <div className="flex flex-col items-center justify-center py-20 px-4 text-center min-h-[60vh]">
+      <div className="h-20 w-20 rounded-full bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center mb-8">
+        <CheckCircle2 className="h-10 w-10 text-emerald-500" />
       </div>
-      <h2 className="text-3xl font-bold tracking-tight mb-4">Project Created!</h2>
-      <p className="text-muted-foreground max-w-md mb-8">
-        Your project workspace has been created successfully. The AI plan has been applied, and tasks have been populated in your task board.
+      <h2 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-50 mb-3">
+        The plan is ready.
+      </h2>
+      <p className="text-lg text-slate-500 dark:text-slate-400 max-w-md mb-10">
+        Your project workspace has been successfully created. Tasks are distributed and milestones are set.
       </p>
-      <Button asChild size="lg">
+      
+      <Button asChild size="lg" className="h-12 text-base font-medium px-8 bg-slate-900 hover:bg-slate-800 text-white dark:bg-indigo-600 dark:hover:bg-indigo-700">
         <Link to={`/projects/${projectId}`}>
-          Open Project Dashboard
+          Open Project
           <ArrowRight className="h-4 w-4 ml-2" />
         </Link>
       </Button>
