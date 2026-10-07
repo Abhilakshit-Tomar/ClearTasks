@@ -197,12 +197,12 @@ export const mockAIPlan: AIProjectPlan = {
       name: 'Planning',
       order: 1,
       tasks: [
-        { title: 'Setup Repo', description: 'init git', priority: 'HIGH', estimatedHours: 2, dependsOn: [] }
+        { title: 'Setup Repo', description: 'init git', priority: 'HIGH', estimatedHours: 2, dependsOn: [], milestoneId: 'm1', relativeStartDay: 1, relativeDueDay: 3 }
       ]
     }
   ],
   milestones: [
-    { title: 'Planning Phase', description: 'Requirements gathered', relativeDay: 7 }
+    { id: 'm1', title: 'Planning Phase', description: 'Requirements gathered', relativeDay: 7 }
   ],
   assignments: []
 };

@@ -38,7 +38,10 @@ const geminiSchema: Schema = {
                 priority: { type: Type.STRING, enum: ['LOW', 'MEDIUM', 'HIGH'] },
                 estimatedHours: { type: Type.INTEGER },
                 dependsOn: { type: Type.ARRAY, items: { type: Type.STRING } },
-                assignedToProfile: { type: Type.STRING }
+                assignedToProfile: { type: Type.STRING },
+                milestoneId: { type: Type.STRING },
+                relativeStartDay: { type: Type.INTEGER },
+                relativeDueDay: { type: Type.INTEGER }
               }
             }
           }
@@ -50,6 +53,7 @@ const geminiSchema: Schema = {
       items: {
         type: Type.OBJECT,
         properties: {
+          id: { type: Type.STRING },
           title: { type: Type.STRING },
           description: { type: Type.STRING },
           relativeDay: { type: Type.INTEGER }
@@ -75,7 +79,7 @@ const generateFallbackPlan = (projectTitle: string) => {
     projectType: 'Software Project',
     difficulty: 'Medium',
     estimatedTasks: 5,
-    timelineWeeks: 4,
+    timelineDays: 28,
     modules: [{ name: 'Core', description: 'Core application features' }],
     phases: [
       {
@@ -87,14 +91,20 @@ const generateFallbackPlan = (projectTitle: string) => {
             description: 'Initialize repository and environment',
             priority: 'HIGH',
             estimatedHours: 4,
-            dependsOn: []
+            dependsOn: [],
+            milestoneId: 'm1',
+            relativeStartDay: 1,
+            relativeDueDay: 3
           },
           {
             title: 'Define Requirements',
             description: 'Finalize functional requirements',
             priority: 'HIGH',
             estimatedHours: 6,
-            dependsOn: []
+            dependsOn: [],
+            milestoneId: 'm1',
+            relativeStartDay: 3,
+            relativeDueDay: 7
           }
         ]
       },
@@ -107,7 +117,10 @@ const generateFallbackPlan = (projectTitle: string) => {
             description: 'Build main functionality',
             priority: 'HIGH',
             estimatedHours: 20,
-            dependsOn: ['Project Setup', 'Define Requirements']
+            dependsOn: ['Project Setup', 'Define Requirements'],
+            milestoneId: 'm2',
+            relativeStartDay: 8,
+            relativeDueDay: 21
           }
         ]
       },
@@ -120,22 +133,28 @@ const generateFallbackPlan = (projectTitle: string) => {
             description: 'Run all tests',
             priority: 'MEDIUM',
             estimatedHours: 8,
-            dependsOn: ['Implement Core Features']
+            dependsOn: ['Implement Core Features'],
+            milestoneId: 'm3',
+            relativeStartDay: 22,
+            relativeDueDay: 26
           },
           {
             title: 'Deployment',
             description: 'Deploy application',
             priority: 'HIGH',
             estimatedHours: 4,
-            dependsOn: ['Testing']
+            dependsOn: ['Testing'],
+            milestoneId: 'm3',
+            relativeStartDay: 26,
+            relativeDueDay: 28
           }
         ]
       }
     ],
     milestones: [
-      { title: 'Planning Complete', description: 'Requirements gathered', relativeDay: 7 },
-      { title: 'Core Development Complete', description: 'Main features built', relativeDay: 21 },
-      { title: 'Project Delivered', description: 'Deployed', relativeDay: 28 },
+      { id: 'm1', title: 'Planning Complete', description: 'Requirements gathered', relativeDay: 7 },
+      { id: 'm2', title: 'Core Development Complete', description: 'Main features built', relativeDay: 21 },
+      { id: 'm3', title: 'Project Delivered', description: 'Deployed', relativeDay: 28 },
     ],
     assignments: []
   };
@@ -209,10 +228,18 @@ router.post('/analyze', async (req, res) => {
 Your job is to generate a structured project plan for a student project.
 Tasks must be specific, actionable, and reasonably sized. Avoid extremely tiny tasks or enterprise-level overhead.
 Distribute tasks logically across phases. Create milestones to track progress before the deadline.
+
+MILESTONE & TASK RULES:
+1. Generate an appropriate number of milestones based on project complexity (e.g., 2-3 for simple, 4-6 for medium, more for complex). Do not hardcode exactly 3.
+2. Milestones MUST represent meaningful checkpoints (e.g., "Database & Backend Complete").
+3. Each task MUST reference its corresponding milestone using "milestoneId".
+4. Calculate task "relativeStartDay", "relativeDueDay" and milestone "relativeDay" realistically based on dependencies and estimated hours. Parallelize work when assigned to different people.
+5. The final milestone must finish on or before the deadline (${availableDays} days).
+
 If Planned Team Profiles are provided, intelligently assign each task's "assignedToProfile" to the displayName of the planned team member based on their skills and preferred work. Otherwise, use placeholders (e.g. Member 1) for up to ${validatedData.teamSize} members.
 The project deadline is ${validatedData.deadline}. Available planning time: ${availableDays} days.
 The deadline is a HARD CONSTRAINT. All phases, tasks, and milestones must fit within this ${availableDays}-day period.
-Ensure timelineDays does not exceed ${availableDays}. Ensure milestone relativeDay does not exceed ${availableDays}.
+Ensure timelineDays does not exceed ${availableDays}. Ensure milestone relativeDay does not exceed ${availableDays}. Ensure task relativeStartDay and relativeDueDay do not exceed ${availableDays}.
 Ensure the output EXACTLY matches the requested JSON schema.`;
 
     const userPrompt = `Project Title: ${validatedData.projectTitle}
@@ -239,8 +266,16 @@ Analyze this project and generate a structured project plan.`;
     }
     if (plan.milestones && Array.isArray(plan.milestones)) {
       plan.milestones.forEach((m: any) => {
-        if (m.relativeDay > availableDays) {
-          m.relativeDay = availableDays;
+        if (m.relativeDay > availableDays) m.relativeDay = availableDays;
+      });
+    }
+    if (plan.phases && Array.isArray(plan.phases)) {
+      plan.phases.forEach((p: any) => {
+        if (p.tasks && Array.isArray(p.tasks)) {
+          p.tasks.forEach((t: any) => {
+            if (t.relativeStartDay > availableDays) t.relativeStartDay = availableDays;
+            if (t.relativeDueDay > availableDays) t.relativeDueDay = availableDays;
+          });
         }
       });
     }
@@ -280,10 +315,18 @@ router.post('/improve-plan', async (req, res) => {
     const systemPrompt = `You are an expert technical project manager and software architect.
 You are improving an existing project plan for a student project based on new user feedback and team skill information.
 Your goal is to adjust tasks, technologies, workloads, and assignments. 
+
+MILESTONE & TASK RULES:
+1. Generate an appropriate number of milestones based on project complexity (e.g., 2-3 for simple, 4-6 for medium, more for complex). Do not hardcode exactly 3.
+2. Milestones MUST represent meaningful checkpoints (e.g., "Database & Backend Complete").
+3. Each task MUST reference its corresponding milestone using "milestoneId".
+4. Calculate task "relativeStartDay", "relativeDueDay" and milestone "relativeDay" realistically based on dependencies and estimated hours. Parallelize work when assigned to different people.
+5. The final milestone must finish on or before the deadline (${availableDays} days).
+
 If Planned Team Profiles or member strengths are provided, intelligently assign each task's "assignedToProfile" to the displayName of the planned team member based on their skills and preferred work.
 The project deadline is ${validatedData.deadline}. Available planning time: ${availableDays} days.
 The deadline is a HARD CONSTRAINT. All phases, tasks, and milestones must fit within this ${availableDays}-day period.
-Ensure timelineDays does not exceed ${availableDays}. Ensure milestone relativeDay does not exceed ${availableDays}.
+Ensure timelineDays does not exceed ${availableDays}. Ensure milestone relativeDay does not exceed ${availableDays}. Ensure task relativeStartDay and relativeDueDay do not exceed ${availableDays}.
 Return the complete, improved project plan using the exact same JSON schema.
 Ensure to preserve useful existing tasks and logical dependencies.`;
 
@@ -312,8 +355,16 @@ Provide the improved project plan.`;
     }
     if (plan.milestones && Array.isArray(plan.milestones)) {
       plan.milestones.forEach((m: any) => {
-        if (m.relativeDay > availableDays) {
-          m.relativeDay = availableDays;
+        if (m.relativeDay > availableDays) m.relativeDay = availableDays;
+      });
+    }
+    if (plan.phases && Array.isArray(plan.phases)) {
+      plan.phases.forEach((p: any) => {
+        if (p.tasks && Array.isArray(p.tasks)) {
+          p.tasks.forEach((t: any) => {
+            if (t.relativeStartDay > availableDays) t.relativeStartDay = availableDays;
+            if (t.relativeDueDay > availableDays) t.relativeDueDay = availableDays;
+          });
         }
       });
     }

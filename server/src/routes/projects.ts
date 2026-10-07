@@ -84,96 +84,125 @@ router.post('/', async (req, res) => {
     );
     const project = projectResult.rows[0];
 
+    let ownerSkills = null;
+    let ownerPreferredTech = null;
+    if (data.teamProfiles && Array.isArray(data.teamProfiles)) {
+      const ownerProfile = data.teamProfiles.find((p: any) => p.isOwner);
+      if (ownerProfile) {
+        ownerSkills = ownerProfile.skills || null;
+        ownerPreferredTech = ownerProfile.preferredWork || null;
+      }
+    }
+
     // Auto-add creator as OWNER
     await client.query(
-      `INSERT INTO project_members (project_id, user_id, role) VALUES ($1, $2, 'OWNER')`,
-      [project.id, data.created_by]
+      `INSERT INTO project_members (project_id, user_id, role, skills, preferred_technologies) VALUES ($1, $2, 'OWNER', $3, $4)`,
+      [project.id, data.created_by, ownerSkills, ownerPreferredTech]
     );
 
     // Insert team profiles if provided
     const profileIdMap: Record<string, string> = {};
     if (data.teamProfiles && Array.isArray(data.teamProfiles)) {
       for (const profile of data.teamProfiles) {
+        const isOwnerProfile = profile.isOwner === true;
+        const linkedUserId = isOwnerProfile ? data.created_by : null;
+
         const result = await client.query(
-          `INSERT INTO project_team_profiles (project_id, display_name, description, skills, experience_level, preferred_work)
-           VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`,
-          [project.id, profile.displayName, profile.description || null, profile.skills || null, profile.experienceLevel || null, profile.preferredWork || null]
+          `INSERT INTO project_team_profiles (project_id, display_name, description, skills, experience_level, preferred_work, linked_user_id)
+           VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id`,
+          [project.id, profile.displayName, profile.description || null, profile.skills || null, profile.experienceLevel || null, profile.preferredWork || null, linkedUserId]
         );
         profileIdMap[profile.displayName] = result.rows[0].id;
       }
     }
 
     // Insert milestones if provided
-    if (req.body.milestones && Array.isArray(req.body.milestones)) {
-      const totalMilestones = req.body.milestones.length;
-      const startDate = new Date();
-      // Use end of day for deadline
-      const deadlineDate = new Date(`${data.deadline}T23:59:59Z`);
-      const totalDuration = deadlineDate.getTime() - startDate.getTime();
+    const milestoneIdMap: Record<string, string> = {};
+    const startDate = new Date();
+    // Use end of day for deadline
+    const deadlineDate = new Date(`${data.deadline}T23:59:59Z`);
 
-      for (let i = 0; i < totalMilestones; i++) {
-        const m = req.body.milestones[i];
-        
+    if (req.body.milestones && Array.isArray(req.body.milestones)) {
+      for (const m of req.body.milestones) {
         let mDateStr = data.deadline;
-        if (totalMilestones > 1 && totalDuration > 0) {
-          const fraction = (i + 1) / totalMilestones;
-          const mDate = new Date(startDate.getTime() + totalDuration * fraction);
+        
+        // Coerce relativeDay to number if it's a string, or check properly
+        const relDay = Number(m.relativeDay);
+        if (!isNaN(relDay)) {
+          let mDate = new Date(startDate);
+          mDate.setDate(mDate.getDate() + relDay);
+          if (mDate > deadlineDate) mDate = deadlineDate;
           mDateStr = mDate.toISOString().split('T')[0];
         }
 
         const parsedM = milestoneSchema.safeParse({
-          title: m.title,
+          title: m.title ? String(m.title).substring(0, 200) : 'Untitled Milestone',
           description: m.description,
           due_date: mDateStr,
           status: 'PENDING'
         });
-        if (!parsedM.success) continue;
-        await client.query(
-          `INSERT INTO milestones (project_id, title, description, due_date, status) VALUES ($1, $2, $3, $4, $5)`,
+        if (!parsedM.success) {
+          console.error('MILESTONE VALIDATION FAILED:', parsedM.error);
+          throw new Error('Milestone validation failed: ' + JSON.stringify(parsedM.error.issues));
+        }
+        const mResult = await client.query(
+          `INSERT INTO milestones (project_id, title, description, due_date, status) VALUES ($1, $2, $3, $4, $5) RETURNING id`,
           [project.id, parsedM.data.title, parsedM.data.description || null, parsedM.data.due_date, parsedM.data.status]
         );
+        if (m.id) {
+          milestoneIdMap[m.id] = mResult.rows[0].id;
+        }
       }
     }
 
     // Insert tasks if provided
     if (req.body.tasks && Array.isArray(req.body.tasks)) {
-      const totalTasks = req.body.tasks.length;
-      const startDate = new Date();
-      const deadlineDate = new Date(`${data.deadline}T23:59:59Z`);
-      const totalDuration = deadlineDate.getTime() - startDate.getTime();
-
-      for (let i = 0; i < totalTasks; i++) {
-        const t = req.body.tasks[i];
-        
+      for (const t of req.body.tasks) {
         let tDateStr = data.deadline;
-        if (totalTasks > 1 && totalDuration > 0) {
-          const fraction = (i + 1) / totalTasks;
-          const tDate = new Date(startDate.getTime() + totalDuration * fraction);
+        const relDue = Number(t.relativeDueDay);
+        if (!isNaN(relDue)) {
+          let tDate = new Date(startDate);
+          tDate.setDate(tDate.getDate() + relDue);
+          if (tDate > deadlineDate) tDate = deadlineDate;
           tDateStr = tDate.toISOString().split('T')[0];
         }
 
         const parsedT = taskSchema.safeParse({
+          milestone_id: t.milestoneId && milestoneIdMap[t.milestoneId] ? milestoneIdMap[t.milestoneId] : null,
           created_by: data.created_by,
-          title: t.title,
+          title: t.title ? String(t.title).substring(0, 200) : 'Untitled Task',
           description: t.description,
-          phase: t.phase || 'General',
+          phase: t.phase ? String(t.phase).substring(0, 100) : 'General',
           status: t.status || 'TODO',
           priority: t.priority || 'MEDIUM',
           due_date: tDateStr,
           estimated_hours: t.estimated_hours || 0,
           assignedToProfile: t.assignedToProfile,
         });
-        if (!parsedT.success) continue;
+        if (!parsedT.success) {
+          console.error('TASK VALIDATION FAILED:', parsedT.error, 'FOR TASK:', t);
+          throw new Error('Task validation failed: ' + JSON.stringify(parsedT.error.issues));
+        }
 
         let assignedProfileId = null;
-        if (parsedT.data.assignedToProfile && profileIdMap[parsedT.data.assignedToProfile]) {
-          assignedProfileId = profileIdMap[parsedT.data.assignedToProfile];
+        let assignedToUser = null;
+
+        if (parsedT.data.assignedToProfile) {
+          const profileName = parsedT.data.assignedToProfile;
+          if (profileIdMap[profileName]) {
+            assignedProfileId = profileIdMap[profileName];
+            // Check if this profile was the owner's profile
+            const profileData = data.teamProfiles?.find((p: any) => p.displayName === profileName);
+            if (profileData && profileData.isOwner) {
+              assignedToUser = data.created_by;
+            }
+          }
         }
 
         await client.query(
-          `INSERT INTO tasks (project_id, created_by, title, description, phase, status, priority, due_date, estimated_hours, assigned_profile_id) 
-           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
-          [project.id, parsedT.data.created_by, parsedT.data.title, parsedT.data.description || null, parsedT.data.phase, parsedT.data.status, parsedT.data.priority, parsedT.data.due_date, parsedT.data.estimated_hours, assignedProfileId]
+          `INSERT INTO tasks (project_id, milestone_id, created_by, title, description, phase, status, priority, due_date, estimated_hours, assigned_profile_id, assigned_to) 
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
+          [project.id, parsedT.data.milestone_id, parsedT.data.created_by, parsedT.data.title, parsedT.data.description || null, parsedT.data.phase, parsedT.data.status, parsedT.data.priority, parsedT.data.due_date, parsedT.data.estimated_hours, assignedProfileId, assignedToUser]
         );
       }
     }
@@ -348,9 +377,38 @@ router.post('/:id/tasks', async (req, res) => {
 // GET milestones
 router.get('/:id/milestones', async (req, res) => {
   try {
-    const result = await query('SELECT * FROM milestones WHERE project_id = $1 ORDER BY due_date ASC', [req.params.id]);
+    const result = await query(`
+      SELECT 
+        m.*,
+        COALESCE(
+          json_agg(
+            json_build_object(
+              'id', t.id,
+              'title', t.title,
+              'description', t.description,
+              'status', t.status,
+              'priority', t.priority,
+              'estimated_hours', t.estimated_hours,
+              'due_date', t.due_date,
+              'assigned_profile_id', t.assigned_profile_id,
+              'assigned_to', t.assigned_to,
+              'assignee_name', u.name,
+              'profile_name', ptp.display_name
+            )
+          ) FILTER (WHERE t.id IS NOT NULL), 
+          '[]'
+        ) as tasks
+      FROM milestones m
+      LEFT JOIN tasks t ON m.id = t.milestone_id
+      LEFT JOIN users u ON t.assigned_to = u.id
+      LEFT JOIN project_team_profiles ptp ON t.assigned_profile_id = ptp.id
+      WHERE m.project_id = $1
+      GROUP BY m.id
+      ORDER BY m.due_date ASC
+    `, [req.params.id]);
     res.json({ success: true, data: result.rows });
   } catch (error) {
+    console.error('Error fetching milestones:', error);
     res.status(500).json({ success: false, error: { message: 'Internal server error' } });
   }
 });

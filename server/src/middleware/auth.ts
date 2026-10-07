@@ -13,8 +13,7 @@ declare global {
 export const attachDbUser = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const authState = getAuth(req);
-    console.log('getAuth(req) returned:', authState);
-    const clerkId = authState.userId;
+    const clerkId = authState?.userId;
     if (!clerkId) {
       return res.status(401).json({ success: false, error: { message: 'Unauthorized' } });
     }

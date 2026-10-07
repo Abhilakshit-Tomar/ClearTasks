@@ -107,9 +107,12 @@ const CreateProjectFlow = () => {
           phase: p.name,
           priority: t.priority,
           estimated_hours: t.estimatedHours,
-          assignedToProfile: t.assignedToProfile
+          assignedToProfile: t.assignedToProfile,
+          milestoneId: t.milestoneId,
+          relativeStartDay: t.relativeStartDay,
+          relativeDueDay: t.relativeDueDay
         }))) || [],
-        milestones: aiPlan?.milestones.map(m => ({ title: m.title, description: m.description })) || [],
+        milestones: aiPlan?.milestones.map(m => ({ id: m.id, title: m.title, description: m.description, relativeDay: m.relativeDay })) || [],
       } as any);
       setCreatedProjectId(project.id);
       setCurrentStep('SUCCESS');

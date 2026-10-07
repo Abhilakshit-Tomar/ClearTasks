@@ -20,7 +20,10 @@ export const projectSchema = z.object({
     skills: z.string().optional(),
     experienceLevel: z.string().optional(),
     preferredWork: z.string().optional(),
+    isOwner: z.boolean().optional(),
   })).optional(),
+  tasks: z.array(z.any()).optional(),
+  milestones: z.array(z.any()).optional(),
 });
 
 export const projectUpdateSchema = projectSchema.partial();
@@ -70,6 +73,7 @@ export const aiAnalyzeSchema = z.object({
     skills: z.string().optional(),
     experienceLevel: z.string().optional(),
     preferredWork: z.string().optional(),
+    isOwner: z.boolean().optional(),
   })).optional(),
 });
 

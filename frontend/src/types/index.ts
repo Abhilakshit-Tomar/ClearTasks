@@ -50,6 +50,7 @@ export interface Milestone {
   due_date: string;
   status: MilestoneStatus;
   created_at: string;
+  tasks?: Task[];
 }
 
 export interface Task {
@@ -133,8 +134,11 @@ export interface AIProjectPlan {
       estimatedHours: number;
       dependsOn: string[];
       assignedToProfile?: string;
+      milestoneId: string;
+      relativeStartDay: number;
+      relativeDueDay: number;
     }[];
   }[];
-  milestones: { title: string; description: string; relativeDay: number }[];
+  milestones: { id: string; title: string; description: string; relativeDay: number }[];
   assignments: { taskTitle: string; memberPlaceholder: string }[];
 }

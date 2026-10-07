@@ -47,6 +47,8 @@ const TeamProfilesForm = ({ initialProfiles, teamSize, onSubmit, onBack }: Props
     setProfiles(newProfiles);
   };
 
+  const [ownerIndex, setOwnerIndex] = useState<number>(0);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -63,7 +65,8 @@ const TeamProfilesForm = ({ initialProfiles, teamSize, onSubmit, onBack }: Props
       return;
     }
 
-    onSubmit(profiles);
+    const outputProfiles = profiles.map((p, idx) => ({ ...p, isOwner: idx === ownerIndex }));
+    onSubmit(outputProfiles);
   };
 
   return (
@@ -147,6 +150,30 @@ const TeamProfilesForm = ({ initialProfiles, teamSize, onSubmit, onBack }: Props
             Add Another Member
           </Button>
         )}
+
+        <Card>
+          <CardContent className="pt-6 space-y-4">
+            <h3 className="font-semibold text-lg">Project Owner Selection</h3>
+            <p className="text-sm text-muted-foreground">Select which of the above team members is the Project Owner (you). They will be automatically connected to your account.</p>
+            <div className="space-y-2">
+              {profiles.map((profile, index) => (
+                <div key={index} className="flex items-center space-x-2">
+                  <input
+                    type="radio"
+                    id={`owner-${index}`}
+                    name="projectOwner"
+                    className="w-4 h-4"
+                    checked={ownerIndex === index}
+                    onChange={() => setOwnerIndex(index)}
+                  />
+                  <Label htmlFor={`owner-${index}`} className="font-normal cursor-pointer">
+                    {profile.displayName || `Member ${index + 1}`} {profile.skills ? `— ${profile.skills}` : ''}
+                  </Label>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
 
         <div className="flex gap-4 pt-4">
           <Button type="button" variant="outline" className="flex-1" onClick={onBack}>

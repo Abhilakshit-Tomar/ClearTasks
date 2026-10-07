@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { taskService } from '@/services/api';
 import { Task } from '@/types';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -20,6 +20,7 @@ const COLUMNS = [
 
 const TaskBoard = () => {
   const { projectId } = useParams<{ projectId: string }>();
+  const navigate = useNavigate();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [newTaskTitle, setNewTaskTitle] = useState('');
@@ -139,11 +140,22 @@ const TaskBoard = () => {
                             {task.priority}
                           </Badge>
                         </div>
-                        {task.phase && (
+                        {task.milestone ? (
+                          <div
+                            onClick={(e) => {
+                              e.preventDefault();
+                              navigate(`/projects/${projectId}/milestones`);
+                            }}
+                          >
+                            <Badge variant="secondary" className="text-xs font-normal hover:bg-secondary/80">
+                              {task.milestone.title}
+                            </Badge>
+                          </div>
+                        ) : task.phase ? (
                           <Badge variant="secondary" className="text-xs font-normal">
                             {task.phase}
                           </Badge>
-                        )}
+                        ) : null}
                         <div className="flex justify-between items-center pt-2">
                           <span className="text-xs text-muted-foreground">
                             {task.estimated_hours}h
