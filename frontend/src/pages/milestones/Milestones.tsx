@@ -13,19 +13,22 @@ const Milestones = () => {
   const [milestones, setMilestones] = useState<Milestone[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const fetchMilestones = async () => {
+    if (!projectId) return;
+    try {
+      const data = await milestoneService.getMilestones(projectId);
+      setMilestones(data);
+    } catch (error) {
+      toast.error("Failed to load milestones");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchMilestones = async () => {
-      if (!projectId) return;
-      try {
-        const data = await milestoneService.getMilestones(projectId);
-        setMilestones(data);
-      } catch (error) {
-        toast.error("Failed to load milestones");
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchMilestones();
+    const interval = setInterval(fetchMilestones, 5000);
+    return () => clearInterval(interval);
   }, [projectId]);
 
   if (loading) return (

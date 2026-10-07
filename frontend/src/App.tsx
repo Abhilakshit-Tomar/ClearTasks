@@ -17,6 +17,7 @@ import Milestones from '@/pages/milestones/Milestones';
 import Notifications from '@/pages/notifications/Notifications';
 import Settings from '@/pages/settings/Settings';
 import TaskDetailsPage from '@/pages/tasks/TaskDetailsPage';
+import InviteAccept from '@/pages/InviteAccept';
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<SignUp />} />
+        <Route path="/accept-invitation" element={<InviteAccept />} />
 
         {/* Protected routes wrapped in Dashboard Layout */}
         <Route element={<DashboardLayout />}>

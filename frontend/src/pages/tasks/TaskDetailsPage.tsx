@@ -17,20 +17,23 @@ const TaskDetailsPage = () => {
   const [task, setTask] = useState<Task | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const fetchTask = async () => {
+    if (!projectId || !taskId) return;
+    try {
+      const tasks = await taskService.getTasks(projectId);
+      const t = tasks.find(x => x.id === taskId);
+      setTask(t || null);
+    } catch (error) {
+      toast.error("Failed to load task");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchTask = async () => {
-      if (!projectId || !taskId) return;
-      try {
-        const tasks = await taskService.getTasks(projectId);
-        const t = tasks.find(x => x.id === taskId);
-        setTask(t || null);
-      } catch (error) {
-        toast.error("Failed to load task");
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchTask();
+    const interval = setInterval(fetchTask, 5000);
+    return () => clearInterval(interval);
   }, [projectId, taskId]);
 
   const handleStatusChange = async (newStatus: string) => {
@@ -83,9 +86,9 @@ const TaskDetailsPage = () => {
               <div className="flex items-center gap-2">
                 <Avatar className="h-8 w-8">
                   <AvatarImage src={task.assignee?.avatar_url} />
-                  <AvatarFallback>{task.assignee?.name?.[0]}</AvatarFallback>
+                  <AvatarFallback>{task.assignee ? task.assignee.name[0] : (task as any).planned_profile ? (task as any).planned_profile.display_name[0] : '?'}</AvatarFallback>
                 </Avatar>
-                <span>{task.assignee?.name || 'Unassigned'}</span>
+                <span>{task.assignee?.name || (task as any).planned_profile?.display_name || 'Unassigned'}</span>
               </div>
               <div className="flex items-center gap-2">
                 <Clock className="h-4 w-4" />

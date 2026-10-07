@@ -37,7 +37,8 @@ const geminiSchema: Schema = {
                 description: { type: Type.STRING },
                 priority: { type: Type.STRING, enum: ['LOW', 'MEDIUM', 'HIGH'] },
                 estimatedHours: { type: Type.INTEGER },
-                dependsOn: { type: Type.ARRAY, items: { type: Type.STRING } }
+                dependsOn: { type: Type.ARRAY, items: { type: Type.STRING } },
+                assignedToProfile: { type: Type.STRING }
               }
             }
           }
@@ -136,9 +137,7 @@ const generateFallbackPlan = (projectTitle: string) => {
       { title: 'Core Development Complete', description: 'Main features built', relativeDay: 21 },
       { title: 'Project Delivered', description: 'Deployed', relativeDay: 28 },
     ],
-    assignments: [
-      { taskTitle: 'Project Setup', memberPlaceholder: 'Member 1' }
-    ]
+    assignments: []
   };
 };
 
@@ -210,7 +209,7 @@ router.post('/analyze', async (req, res) => {
 Your job is to generate a structured project plan for a student project.
 Tasks must be specific, actionable, and reasonably sized. Avoid extremely tiny tasks or enterprise-level overhead.
 Distribute tasks logically across phases. Create milestones to track progress before the deadline.
-Assign placeholders (Member 1, Member 2, etc.) for up to ${validatedData.teamSize} members.
+If Planned Team Profiles are provided, intelligently assign each task's "assignedToProfile" to the displayName of the planned team member based on their skills and preferred work. Otherwise, use placeholders (e.g. Member 1) for up to ${validatedData.teamSize} members.
 The project deadline is ${validatedData.deadline}. Available planning time: ${availableDays} days.
 The deadline is a HARD CONSTRAINT. All phases, tasks, and milestones must fit within this ${availableDays}-day period.
 Ensure timelineDays does not exceed ${availableDays}. Ensure milestone relativeDay does not exceed ${availableDays}.
@@ -220,6 +219,7 @@ Ensure the output EXACTLY matches the requested JSON schema.`;
 Description: ${validatedData.description}
 Team Size: ${validatedData.teamSize}
 Deadline: ${validatedData.deadline}
+Planned Team Profiles: ${validatedData.teamProfiles ? JSON.stringify(validatedData.teamProfiles, null, 2) : 'None'}
 
 Analyze this project and generate a structured project plan.`;
 
@@ -280,7 +280,7 @@ router.post('/improve-plan', async (req, res) => {
     const systemPrompt = `You are an expert technical project manager and software architect.
 You are improving an existing project plan for a student project based on new user feedback and team skill information.
 Your goal is to adjust tasks, technologies, workloads, and assignments. 
-If skill information is provided (e.g. member strengths), assign tasks to match those strengths.
+If Planned Team Profiles or member strengths are provided, intelligently assign each task's "assignedToProfile" to the displayName of the planned team member based on their skills and preferred work.
 The project deadline is ${validatedData.deadline}. Available planning time: ${availableDays} days.
 The deadline is a HARD CONSTRAINT. All phases, tasks, and milestones must fit within this ${availableDays}-day period.
 Ensure timelineDays does not exceed ${availableDays}. Ensure milestone relativeDay does not exceed ${availableDays}.
@@ -298,6 +298,7 @@ Title: ${validatedData.projectTitle}
 Description: ${validatedData.description}
 Team Size: ${validatedData.teamSize}
 Deadline: ${validatedData.deadline}
+Planned Team Profiles: ${validatedData.teamProfiles ? JSON.stringify(validatedData.teamProfiles, null, 2) : 'None'}
 
 Provide the improved project plan.`;
 

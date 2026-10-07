@@ -9,9 +9,10 @@ import InitialPlanReview from './steps/InitialPlanReview';
 import ImprovePlanForm from './steps/ImprovePlanForm';
 import ReviewConfirm from './steps/ReviewConfirm';
 import ProjectSuccess from './steps/ProjectSuccess';
+import TeamProfilesForm, { TeamProfileInput } from './steps/TeamProfilesForm';
 import { toast } from 'sonner';
 
-type FlowStep = 'INFO' | 'ANALYZING' | 'INITIAL_PLAN' | 'IMPROVING' | 'IMPROVED_PLAN' | 'REVIEW' | 'SUCCESS';
+type FlowStep = 'INFO' | 'TEAM_PROFILES' | 'ANALYZING' | 'INITIAL_PLAN' | 'IMPROVING' | 'IMPROVED_PLAN' | 'REVIEW' | 'SUCCESS';
 
 const CreateProjectFlow = () => {
   const [currentStep, setCurrentStep] = useState<FlowStep>('INFO');
@@ -21,23 +22,25 @@ const CreateProjectFlow = () => {
   const [createdProjectId, setCreatedProjectId] = useState<string | null>(null);
 
   // Handlers
-  const handleInfoSubmit = async (data: any) => {
+  const handleInfoSubmit = (data: any) => {
     setProjectData({ ...projectData, ...data });
+    setCurrentStep('TEAM_PROFILES');
+  };
+
+  const handleTeamProfilesSubmit = async (profiles: TeamProfileInput[]) => {
+    const fullData = { ...projectData, teamProfiles: profiles };
+    setProjectData(fullData);
     setCurrentStep('ANALYZING');
     
     try {
       const aiPayload = {
-        projectTitle: data.title,
-        description: data.description,
-        teamSize: parseInt(data.teamSize, 10) || 1,
-        deadline: data.deadline
+        projectTitle: fullData.title,
+        description: fullData.description,
+        teamSize: parseInt(fullData.teamSize, 10) || 1,
+        deadline: fullData.deadline,
+        teamProfiles: profiles,
       };
-      console.log('[AI FLOW] submit started');
-      console.log('[AI FLOW] analyze request started');
       const plan = await aiService.analyzeProject(aiPayload);
-      console.log('[AI FLOW] analyze response received');
-      console.log('[AI FLOW] plan received', plan);
-      console.log('[AI FLOW] navigating to Initial AI Plan');
       setAiPlan(plan);
       setCurrentStep('INITIAL_PLAN');
     } catch (error: any) {
@@ -70,6 +73,7 @@ const CreateProjectFlow = () => {
         description: projectData.description,
         teamSize: parseInt(projectData.teamSize, 10) || 1,
         deadline: projectData.deadline,
+        teamProfiles: projectData.teamProfiles,
         originalPlan: aiPlan,
         improvements: improvements
       };
@@ -96,12 +100,14 @@ const CreateProjectFlow = () => {
         team_size: parseInt(projectData.teamSize || '1') || 1,
         project_type: aiPlan?.projectType,
         difficulty: aiPlan?.difficulty,
+        teamProfiles: projectData.teamProfiles,
         tasks: aiPlan?.phases.flatMap(p => p.tasks.map(t => ({
           title: t.title,
           description: t.description,
           phase: p.name,
           priority: t.priority,
-          estimated_hours: t.estimatedHours
+          estimated_hours: t.estimatedHours,
+          assignedToProfile: t.assignedToProfile
         }))) || [],
         milestones: aiPlan?.milestones.map(m => ({ title: m.title, description: m.description })) || [],
       } as any);
@@ -115,6 +121,14 @@ const CreateProjectFlow = () => {
   return (
     <div className="max-w-4xl mx-auto pb-12">
       {currentStep === 'INFO' && <ProjectInfoForm onSubmit={handleInfoSubmit} />}
+      {currentStep === 'TEAM_PROFILES' && (
+        <TeamProfilesForm 
+          initialProfiles={projectData.teamProfiles || []}
+          teamSize={parseInt(projectData.teamSize, 10) || 1}
+          onSubmit={handleTeamProfilesSubmit}
+          onBack={() => setCurrentStep('INFO')}
+        />
+      )}
       {currentStep === 'ANALYZING' && <AIAnalysisLoading text="Analyzing project requirements..." />}
       {currentStep === 'INITIAL_PLAN' && aiPlan && (
         <InitialPlanReview 

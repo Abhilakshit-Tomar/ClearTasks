@@ -90,6 +90,19 @@ router.post('/', async (req, res) => {
       [project.id, data.created_by]
     );
 
+    // Insert team profiles if provided
+    const profileIdMap: Record<string, string> = {};
+    if (data.teamProfiles && Array.isArray(data.teamProfiles)) {
+      for (const profile of data.teamProfiles) {
+        const result = await client.query(
+          `INSERT INTO project_team_profiles (project_id, display_name, description, skills, experience_level, preferred_work)
+           VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`,
+          [project.id, profile.displayName, profile.description || null, profile.skills || null, profile.experienceLevel || null, profile.preferredWork || null]
+        );
+        profileIdMap[profile.displayName] = result.rows[0].id;
+      }
+    }
+
     // Insert milestones if provided
     if (req.body.milestones && Array.isArray(req.body.milestones)) {
       const totalMilestones = req.body.milestones.length;
@@ -148,12 +161,19 @@ router.post('/', async (req, res) => {
           priority: t.priority || 'MEDIUM',
           due_date: tDateStr,
           estimated_hours: t.estimated_hours || 0,
+          assignedToProfile: t.assignedToProfile,
         });
         if (!parsedT.success) continue;
+
+        let assignedProfileId = null;
+        if (parsedT.data.assignedToProfile && profileIdMap[parsedT.data.assignedToProfile]) {
+          assignedProfileId = profileIdMap[parsedT.data.assignedToProfile];
+        }
+
         await client.query(
-          `INSERT INTO tasks (project_id, created_by, title, description, phase, status, priority, due_date, estimated_hours) 
-           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
-          [project.id, parsedT.data.created_by, parsedT.data.title, parsedT.data.description || null, parsedT.data.phase, parsedT.data.status, parsedT.data.priority, parsedT.data.due_date, parsedT.data.estimated_hours]
+          `INSERT INTO tasks (project_id, created_by, title, description, phase, status, priority, due_date, estimated_hours, assigned_profile_id) 
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
+          [project.id, parsedT.data.created_by, parsedT.data.title, parsedT.data.description || null, parsedT.data.phase, parsedT.data.status, parsedT.data.priority, parsedT.data.due_date, parsedT.data.estimated_hours, assignedProfileId]
         );
       }
     }
@@ -270,17 +290,36 @@ router.delete('/:id/members/:userId', async (req, res) => {
 router.get('/:id/tasks', async (req, res) => {
   try {
     const { status, assignedTo, milestoneId } = req.query;
-    let sql = 'SELECT * FROM tasks WHERE project_id = $1';
+    let sql = `
+      SELECT t.*,
+             row_to_json(u.*) as assignee,
+             row_to_json(ptp.*) as planned_profile,
+             row_to_json(m.*) as milestone
+      FROM tasks t
+      LEFT JOIN users u ON t.assigned_to = u.id
+      LEFT JOIN project_team_profiles ptp ON t.assigned_profile_id = ptp.id
+      LEFT JOIN milestones m ON t.milestone_id = m.id
+      WHERE t.project_id = $1
+    `;
     const params: any[] = [req.params.id];
     let paramCount = 2;
 
-    if (status) { sql += ` AND status = $${paramCount++}`; params.push(status); }
-    if (assignedTo) { sql += ` AND assigned_to = $${paramCount++}`; params.push(assignedTo); }
-    if (milestoneId) { sql += ` AND milestone_id = $${paramCount++}`; params.push(milestoneId); }
+    if (status) { sql += ` AND t.status = $${paramCount++}`; params.push(status); }
+    if (assignedTo) { sql += ` AND t.assigned_to = $${paramCount++}`; params.push(assignedTo); }
+    if (milestoneId) { sql += ` AND t.milestone_id = $${paramCount++}`; params.push(milestoneId); }
 
-    sql += ' ORDER BY created_at DESC';
+    sql += ' ORDER BY t.created_at DESC';
     const result = await query(sql, params);
-    res.json({ success: true, data: result.rows });
+    
+    // We need to clean up the joined JSON
+    const data = result.rows.map(row => ({
+      ...row,
+      assignee: row.assignee?.id ? row.assignee : undefined,
+      planned_profile: row.planned_profile?.id ? row.planned_profile : undefined,
+      milestone: row.milestone?.id ? row.milestone : undefined
+    }));
+    
+    res.json({ success: true, data });
   } catch (error) {
     res.status(500).json({ success: false, error: { message: 'Internal server error' } });
   }
@@ -329,6 +368,27 @@ router.post('/:id/milestones', async (req, res) => {
       [req.params.id, d.title, d.description, d.due_date, d.status]
     );
     res.status(201).json({ success: true, data: result.rows[0] });
+  } catch (error) {
+    res.status(500).json({ success: false, error: { message: 'Internal server error' } });
+  }
+});
+
+// GET team profiles
+router.get('/:id/team-profiles', async (req, res) => {
+  try {
+    const result = await query(`
+      SELECT ptp.*,
+             EXISTS (
+               SELECT 1 FROM project_invitations pi 
+               WHERE pi.team_profile_id = ptp.id 
+                 AND pi.accepted_at IS NULL 
+                 AND pi.expires_at > CURRENT_TIMESTAMP
+             ) as has_pending_invitation
+      FROM project_team_profiles ptp
+      WHERE ptp.project_id = $1 
+      ORDER BY ptp.created_at ASC
+    `, [req.params.id]);
+    res.json({ success: true, data: result.rows });
   } catch (error) {
     res.status(500).json({ success: false, error: { message: 'Internal server error' } });
   }

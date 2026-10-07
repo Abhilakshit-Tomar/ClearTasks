@@ -15,26 +15,28 @@ const ProjectDashboard = () => {
   const [milestones, setMilestones] = useState<Milestone[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const fetchDashboardData = async () => {
+    if (!projectId) return;
+    try {
+      const [proj, t, m] = await Promise.all([
+        projectService.getProject(projectId),
+        taskService.getTasks(projectId),
+        milestoneService.getMilestones(projectId)
+      ]);
+      setProject(proj || null);
+      setTasks(t || []);
+      setMilestones(m || []);
+    } catch (error) {
+      console.error("Error fetching project data", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchDashboardData = async () => {
-      if (!projectId) return;
-      setLoading(true);
-      try {
-        const [proj, t, m] = await Promise.all([
-          projectService.getProject(projectId),
-          taskService.getTasks(projectId),
-          milestoneService.getMilestones(projectId)
-        ]);
-        setProject(proj || null);
-        setTasks(t || []);
-        setMilestones(m || []);
-      } catch (error) {
-        console.error("Error fetching project data", error);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchDashboardData();
+    const interval = setInterval(fetchDashboardData, 5000);
+    return () => clearInterval(interval);
   }, [projectId]);
 
   if (loading) return (

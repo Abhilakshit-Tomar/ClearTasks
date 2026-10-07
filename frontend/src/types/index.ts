@@ -57,6 +57,7 @@ export interface Task {
   project_id: string;
   milestone_id?: string;
   assigned_to?: string;
+  assigned_profile_id?: string;
   created_by: string;
   title: string;
   description?: string;
@@ -70,6 +71,37 @@ export interface Task {
   // Joined relations for the UI
   assignee?: User;
   milestone?: Milestone;
+}
+
+export interface TeamProfile {
+  id: string;
+  project_id: string;
+  display_name: string;
+  description?: string;
+  skills?: string;
+  experience_level?: string;
+  preferred_work?: string;
+  linked_user_id?: string;
+  has_pending_invitation?: boolean;
+  created_at: string;
+}
+
+export interface ProjectInvitation {
+  id: string;
+  project_id: string;
+  team_profile_id: string;
+  email: string;
+  token: string;
+  invited_by: string;
+  expires_at: string;
+  accepted_at?: string;
+  created_at: string;
+  
+  // Extended fields for UI
+  project_name?: string;
+  display_name?: string;
+  skills?: string;
+  preferred_work?: string;
 }
 
 export interface Notification {
@@ -100,6 +132,7 @@ export interface AIProjectPlan {
       priority: TaskPriority;
       estimatedHours: number;
       dependsOn: string[];
+      assignedToProfile?: string;
     }[];
   }[];
   milestones: { title: string; description: string; relativeDay: number }[];

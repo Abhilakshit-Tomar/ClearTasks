@@ -1,4 +1,4 @@
-import { Project, Task, ProjectMember, Milestone, Notification, AIProjectPlan } from '../types';
+import { Project, Task, ProjectMember, Milestone, Notification, AIProjectPlan, TeamProfile, ProjectInvitation } from '../types';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
 
@@ -78,6 +78,15 @@ export const taskService = {
 
 export const teamService = {
   getTeam: (projectId: string) => fetchApi<ProjectMember[]>(`/projects/${projectId}/members`),
+  getTeamProfiles: (projectId: string) => fetchApi<TeamProfile[]>(`/projects/${projectId}/team-profiles`),
+};
+
+export const invitationService = {
+  createInvitation: (data: { projectId: string, teamProfileId: string, email: string }) => 
+    fetchApi<string>('/invitations', { method: 'POST', body: JSON.stringify(data) }),
+  getPendingInvitations: () => fetchApi<ProjectInvitation[]>(`/invitations/pending`),
+  acceptInvitation: (id: string) => fetchApi<{projectId: string}>(`/invitations/${id}/accept`, { method: 'POST' }),
+  acceptTicketInvitation: () => fetchApi<{projectId: string}>('/invitations/accept', { method: 'POST' }),
 };
 
 export const milestoneService = {

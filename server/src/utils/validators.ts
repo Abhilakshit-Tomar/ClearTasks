@@ -14,6 +14,13 @@ export const projectSchema = z.object({
   preferred_technologies: z.string().optional().nullable(),
   instructor_requirements: z.string().optional().nullable(),
   advanced_features: z.string().optional().nullable(),
+  teamProfiles: z.array(z.object({
+    displayName: z.string(),
+    description: z.string().optional(),
+    skills: z.string().optional(),
+    experienceLevel: z.string().optional(),
+    preferredWork: z.string().optional(),
+  })).optional(),
 });
 
 export const projectUpdateSchema = projectSchema.partial();
@@ -47,6 +54,7 @@ export const taskSchema = z.object({
   priority: z.enum(['LOW', 'MEDIUM', 'HIGH']).default('MEDIUM'),
   due_date: z.string().refine((val) => !isNaN(Date.parse(val)), { message: 'Invalid date' }).optional().nullable(),
   estimated_hours: z.number().min(0).optional().nullable(),
+  assignedToProfile: z.string().optional().nullable(),
 });
 
 export const taskUpdateSchema = taskSchema.partial();
@@ -56,6 +64,13 @@ export const aiAnalyzeSchema = z.object({
   description: z.string().min(1).max(5000),
   teamSize: z.number().int().min(1),
   deadline: z.string().refine((val) => !isNaN(Date.parse(val)), { message: 'Invalid date format' }),
+  teamProfiles: z.array(z.object({
+    displayName: z.string(),
+    description: z.string().optional(),
+    skills: z.string().optional(),
+    experienceLevel: z.string().optional(),
+    preferredWork: z.string().optional(),
+  })).optional(),
 });
 
 export const aiImproveSchema = aiAnalyzeSchema.extend({

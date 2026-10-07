@@ -44,19 +44,22 @@ const TaskBoard = () => {
       toast.error('Failed to create task');
     }
   };
+  const fetchTasks = async () => {
+    if (!projectId) return;
+    try {
+      const data = await taskService.getTasks(projectId);
+      setTasks(data);
+    } catch (error) {
+      console.error("Failed to load tasks", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchTasks = async () => {
-      if (!projectId) return;
-      try {
-        const data = await taskService.getTasks(projectId);
-        setTasks(data);
-      } catch (error) {
-        console.error("Failed to load tasks", error);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchTasks();
+    const interval = setInterval(fetchTasks, 5000);
+    return () => clearInterval(interval);
   }, [projectId]);
 
   if (loading) return (
@@ -147,7 +150,9 @@ const TaskBoard = () => {
                           </span>
                           <Avatar className="h-6 w-6">
                             <AvatarImage src={task.assignee?.avatar_url} />
-                            <AvatarFallback>{task.assignee?.name?.[0] || '?'}</AvatarFallback>
+                            <AvatarFallback className="text-[10px]">
+                              {task.assignee ? task.assignee.name[0] : (task as any).planned_profile ? (task as any).planned_profile.display_name[0] : '?'}
+                            </AvatarFallback>
                           </Avatar>
                         </div>
                       </CardContent>

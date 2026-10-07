@@ -10,6 +10,7 @@ import tasksRouter from './routes/tasks';
 import milestonesRouter from './routes/milestones';
 import notificationsRouter from './routes/notifications';
 import aiRouter from './routes/ai';
+import invitationsRouter from './routes/invitations';
 
 import fs from 'fs';
 
@@ -39,6 +40,7 @@ app.use('/api/tasks', requireAuth(), attachDbUser, tasksRouter);
 app.use('/api/milestones', requireAuth(), attachDbUser, milestonesRouter);
 app.use('/api/notifications', requireAuth(), attachDbUser, notificationsRouter);
 app.use('/api/ai', requireAuth(), attachDbUser, aiRouter);
+app.use('/api/invitations', requireAuth(), attachDbUser, invitationsRouter);
 
 // Global Error Handler
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
