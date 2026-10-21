@@ -1,114 +1,146 @@
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Sparkles, Calendar, Users, Briefcase } from 'lucide-react';
+import { useState } from "react";
+import { ArrowRight, Calendar, Users } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 
+export interface ProjectInfoValues {
+  title: string;
+  description: string;
+  teamSize: string;
+  deadline: string;
+}
 interface Props {
-  onSubmit: (data: any) => void;
+  initialValues?: Partial<ProjectInfoValues>;
+  onSubmit: (data: ProjectInfoValues) => void;
+  onDraftChange?: (data: ProjectInfoValues) => void;
 }
 
-const ProjectInfoForm = ({ onSubmit }: Props) => {
-  const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    teamSize: '',
-    deadline: ''
+export default function ProjectInfoForm({
+  initialValues,
+  onSubmit,
+  onDraftChange,
+}: Props) {
+  const [form, setForm] = useState<ProjectInfoValues>({
+    title: "",
+    description: "",
+    teamSize: "",
+    deadline: "",
+    ...initialValues,
   });
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSubmit(formData);
+  const update = (field: keyof ProjectInfoValues, value: string) => {
+    const next = { ...form, [field]: value };
+    setForm(next);
+    onDraftChange?.(next);
   };
-
+  const [minDate] = useState(() => {
+    const today = new Date();
+    return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+  });
   return (
-    <div className="max-w-2xl mx-auto mt-8">
-      <div className="mb-10 text-center">
-        <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-50 mb-3">
+    <div className="mx-auto max-w-2xl py-6">
+      <div className="mb-8">
+        <h1 className="font-editorial text-4xl sm:text-5xl">
           What are you building?
         </h1>
-        <p className="text-slate-500 dark:text-slate-400 text-lg">
-          Give us a few details and ClearTasks will build the plan.
+        <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+          Give the big idea a little shape. We’ll help your team turn it into a
+          plan.
         </p>
       </div>
-
-      <div className="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 sm:p-8 shadow-sm">
-        <form onSubmit={handleSubmit} className="space-y-6">
+      <form
+        className="surface space-y-6 p-6 sm:p-8"
+        onSubmit={(event) => {
+          event.preventDefault();
+          // Native values also cover autofill and date-picker commits that skip change events.
+          const values = new FormData(event.currentTarget);
+          onSubmit({
+            title: String(values.get("title") || "").trim(),
+            description: String(values.get("description") || "").trim(),
+            teamSize: String(values.get("teamSize") || ""),
+            deadline: String(values.get("deadline") || ""),
+          });
+        }}
+      >
+        <div className="space-y-2">
+          <Label htmlFor="project-title">Project name</Label>
+          <Input
+            id="project-title"
+            name="title"
+            required
+            maxLength={200}
+            placeholder="e.g. Campus garden"
+            value={form.title}
+            onChange={(event) => update("title", event.target.value)}
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="project-description">What do you want to make?</Label>
+          <Textarea
+            id="project-description"
+            name="description"
+            required
+            minLength={10}
+            rows={5}
+            maxLength={10000}
+            placeholder="Describe the goal, what it should do, and what a good result looks like."
+            value={form.description}
+            onChange={(event) => update("description", event.target.value)}
+          />
+          <p className="text-xs text-muted-foreground">
+            A few specific details help make the suggested tasks useful.
+          </p>
+        </div>
+        <div className="grid gap-5 sm:grid-cols-2">
           <div className="space-y-2">
-            <Label htmlFor="title" className="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
-              <Briefcase className="h-4 w-4 text-slate-400" />
-              Project Title
+            <Label htmlFor="team-size" className="flex items-center gap-2">
+              <Users className="size-4 text-muted-foreground" />
+              Team size
             </Label>
-            <Input 
-              id="title" 
-              required 
-              placeholder="e.g., Campus Event Management System" 
-              className="h-11 bg-slate-50 dark:bg-slate-900"
-              value={formData.title}
-              onChange={(e) => setFormData({...formData, title: e.target.value})}
+            <Input
+              id="team-size"
+              name="teamSize"
+              required
+              type="number"
+              min={1}
+              max={50}
+              step={1}
+              placeholder="Including you"
+              value={form.teamSize}
+              onChange={(event) => update("teamSize", event.target.value)}
             />
           </div>
-          
           <div className="space-y-2">
-            <Label htmlFor="description" className="text-sm font-semibold text-slate-700 dark:text-slate-300">
-              Project Description
+            <Label
+              htmlFor="project-deadline"
+              className="flex items-center gap-2"
+            >
+              <Calendar className="size-4 text-muted-foreground" />
+              Deadline
             </Label>
-            <Textarea 
-              id="description" 
-              required 
-              placeholder="Describe the main features, target audience, and what makes it special..." 
-              rows={5}
-              className="resize-none bg-slate-50 dark:bg-slate-900"
-              value={formData.description}
-              onChange={(e) => setFormData({...formData, description: e.target.value})}
+            <Input
+              id="project-deadline"
+              name="deadline"
+              required
+              type="date"
+              min={minDate}
+              value={form.deadline}
+              onInput={(event) => update("deadline", event.currentTarget.value)}
+              onChange={(event) => update("deadline", event.target.value)}
             />
           </div>
-          
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <Label htmlFor="teamSize" className="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
-                <Users className="h-4 w-4 text-slate-400" />
-                Team Size
-              </Label>
-              <Input 
-                id="teamSize" 
-                type="number" 
-                min="1" 
-                max="20" 
-                required 
-                placeholder="e.g., 4"
-                className="h-11 bg-slate-50 dark:bg-slate-900"
-                value={formData.teamSize}
-                onChange={(e) => setFormData({...formData, teamSize: e.target.value})}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="deadline" className="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
-                <Calendar className="h-4 w-4 text-slate-400" />
-                Deadline
-              </Label>
-              <Input 
-                id="deadline" 
-                type="date" 
-                required 
-                className="h-11 bg-slate-50 dark:bg-slate-900"
-                value={formData.deadline}
-                onChange={(e) => setFormData({...formData, deadline: e.target.value})}
-              />
-            </div>
-          </div>
-
-          <div className="pt-6 border-t border-slate-100 dark:border-slate-800">
-            <Button type="submit" size="lg" className="w-full h-12 text-base font-semibold">
-              <Sparkles className="h-5 w-5 mr-2" />
-              Build My Plan
-            </Button>
-          </div>
-        </form>
-      </div>
+        </div>
+        <div className="flex flex-col justify-between gap-4 border-t pt-6 sm:flex-row sm:items-center">
+          <p className="text-xs text-muted-foreground">
+            Next: introduce your team.
+          </p>
+          <Button type="submit" size="lg">
+            Continue to team
+            <ArrowRight />
+          </Button>
+        </div>
+      </form>
     </div>
   );
-};
-
-export default ProjectInfoForm;
+}

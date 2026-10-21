@@ -1,0 +1,1074 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-21T05:57:21.022Z",
+  "title": "Design System: ClearTasks",
+  "extensions": {
+    "colorMeta": {
+      "background": {
+        "role": "neutral",
+        "displayName": "Warm ivory",
+        "tonalRamp": [
+          "oklch(15% 0.00692 91.47)",
+          "oklch(27% 0.00692 91.47)",
+          "oklch(39% 0.00692 91.47)",
+          "oklch(51% 0.00692 91.47)",
+          "oklch(63% 0.00692 91.47)",
+          "oklch(75% 0.00692 91.47)",
+          "oklch(87% 0.00692 91.47)",
+          "oklch(95% 0.00692 91.47)"
+        ]
+      },
+      "foreground": {
+        "role": "neutral",
+        "displayName": "Dark ink",
+        "tonalRamp": [
+          "oklch(15% 0.01287 159.91)",
+          "oklch(27% 0.01287 159.91)",
+          "oklch(39% 0.01287 159.91)",
+          "oklch(51% 0.01287 159.91)",
+          "oklch(63% 0.01287 159.91)",
+          "oklch(75% 0.01287 159.91)",
+          "oklch(87% 0.01287 159.91)",
+          "oklch(95% 0.01287 159.91)"
+        ]
+      },
+      "card": {
+        "role": "neutral",
+        "displayName": "Light paper",
+        "tonalRamp": [
+          "oklch(15% 0.00274 95.07)",
+          "oklch(27% 0.00274 95.07)",
+          "oklch(39% 0.00274 95.07)",
+          "oklch(51% 0.00274 95.07)",
+          "oklch(63% 0.00274 95.07)",
+          "oklch(75% 0.00274 95.07)",
+          "oklch(87% 0.00274 95.07)",
+          "oklch(95% 0.00274 95.07)"
+        ]
+      },
+      "card-foreground": {
+        "role": "neutral",
+        "displayName": "Paper ink",
+        "tonalRamp": [
+          "oklch(15% 0.01287 159.91)",
+          "oklch(27% 0.01287 159.91)",
+          "oklch(39% 0.01287 159.91)",
+          "oklch(51% 0.01287 159.91)",
+          "oklch(63% 0.01287 159.91)",
+          "oklch(75% 0.01287 159.91)",
+          "oklch(87% 0.01287 159.91)",
+          "oklch(95% 0.01287 159.91)"
+        ]
+      },
+      "popover": {
+        "role": "neutral",
+        "displayName": "Popover paper",
+        "tonalRamp": [
+          "oklch(15% 0.00274 95.07)",
+          "oklch(27% 0.00274 95.07)",
+          "oklch(39% 0.00274 95.07)",
+          "oklch(51% 0.00274 95.07)",
+          "oklch(63% 0.00274 95.07)",
+          "oklch(75% 0.00274 95.07)",
+          "oklch(87% 0.00274 95.07)",
+          "oklch(95% 0.00274 95.07)"
+        ]
+      },
+      "popover-foreground": {
+        "role": "neutral",
+        "displayName": "Popover ink",
+        "tonalRamp": [
+          "oklch(15% 0.01287 159.91)",
+          "oklch(27% 0.01287 159.91)",
+          "oklch(39% 0.01287 159.91)",
+          "oklch(51% 0.01287 159.91)",
+          "oklch(63% 0.01287 159.91)",
+          "oklch(75% 0.01287 159.91)",
+          "oklch(87% 0.01287 159.91)",
+          "oklch(95% 0.01287 159.91)"
+        ]
+      },
+      "primary": {
+        "role": "primary",
+        "displayName": "Forest green",
+        "tonalRamp": [
+          "oklch(15% 0.06674 167.40)",
+          "oklch(27% 0.06674 167.40)",
+          "oklch(39% 0.06674 167.40)",
+          "oklch(51% 0.06674 167.40)",
+          "oklch(63% 0.06674 167.40)",
+          "oklch(75% 0.06674 167.40)",
+          "oklch(87% 0.06674 167.40)",
+          "oklch(95% 0.06674 167.40)"
+        ]
+      },
+      "primary-foreground": {
+        "role": "primary",
+        "displayName": "Paper on forest",
+        "tonalRamp": [
+          "oklch(15% 0.00419 91.45)",
+          "oklch(27% 0.00419 91.45)",
+          "oklch(39% 0.00419 91.45)",
+          "oklch(51% 0.00419 91.45)",
+          "oklch(63% 0.00419 91.45)",
+          "oklch(75% 0.00419 91.45)",
+          "oklch(87% 0.00419 91.45)",
+          "oklch(95% 0.00419 91.45)"
+        ]
+      },
+      "secondary": {
+        "role": "neutral",
+        "displayName": "Oat",
+        "tonalRamp": [
+          "oklch(15% 0.01152 88.87)",
+          "oklch(27% 0.01152 88.87)",
+          "oklch(39% 0.01152 88.87)",
+          "oklch(51% 0.01152 88.87)",
+          "oklch(63% 0.01152 88.87)",
+          "oklch(75% 0.01152 88.87)",
+          "oklch(87% 0.01152 88.87)",
+          "oklch(95% 0.01152 88.87)"
+        ]
+      },
+      "secondary-foreground": {
+        "role": "neutral",
+        "displayName": "Oat ink",
+        "tonalRamp": [
+          "oklch(15% 0.01682 159.83)",
+          "oklch(27% 0.01682 159.83)",
+          "oklch(39% 0.01682 159.83)",
+          "oklch(51% 0.01682 159.83)",
+          "oklch(63% 0.01682 159.83)",
+          "oklch(75% 0.01682 159.83)",
+          "oklch(87% 0.01682 159.83)",
+          "oklch(95% 0.01682 159.83)"
+        ]
+      },
+      "muted": {
+        "role": "neutral",
+        "displayName": "Soft paper",
+        "tonalRamp": [
+          "oklch(15% 0.01013 91.50)",
+          "oklch(27% 0.01013 91.50)",
+          "oklch(39% 0.01013 91.50)",
+          "oklch(51% 0.01013 91.50)",
+          "oklch(63% 0.01013 91.50)",
+          "oklch(75% 0.01013 91.50)",
+          "oklch(87% 0.01013 91.50)",
+          "oklch(95% 0.01013 91.50)"
+        ]
+      },
+      "muted-foreground": {
+        "role": "neutral",
+        "displayName": "Secondary ink",
+        "tonalRamp": [
+          "oklch(15% 0.01632 156.61)",
+          "oklch(27% 0.01632 156.61)",
+          "oklch(39% 0.01632 156.61)",
+          "oklch(51% 0.01632 156.61)",
+          "oklch(63% 0.01632 156.61)",
+          "oklch(75% 0.01632 156.61)",
+          "oklch(87% 0.01632 156.61)",
+          "oklch(95% 0.01632 156.61)"
+        ]
+      },
+      "accent": {
+        "role": "neutral",
+        "displayName": "Quiet green tint",
+        "tonalRamp": [
+          "oklch(15% 0.01095 164.83)",
+          "oklch(27% 0.01095 164.83)",
+          "oklch(39% 0.01095 164.83)",
+          "oklch(51% 0.01095 164.83)",
+          "oklch(63% 0.01095 164.83)",
+          "oklch(75% 0.01095 164.83)",
+          "oklch(87% 0.01095 164.83)",
+          "oklch(95% 0.01095 164.83)"
+        ]
+      },
+      "accent-foreground": {
+        "role": "neutral",
+        "displayName": "Quiet green ink",
+        "tonalRamp": [
+          "oklch(15% 0.06674 167.40)",
+          "oklch(27% 0.06674 167.40)",
+          "oklch(39% 0.06674 167.40)",
+          "oklch(51% 0.06674 167.40)",
+          "oklch(63% 0.06674 167.40)",
+          "oklch(75% 0.06674 167.40)",
+          "oklch(87% 0.06674 167.40)",
+          "oklch(95% 0.06674 167.40)"
+        ]
+      },
+      "destructive": {
+        "role": "tertiary",
+        "displayName": "Red clay",
+        "tonalRamp": [
+          "oklch(15% 0.15761 27.70)",
+          "oklch(27% 0.15761 27.70)",
+          "oklch(39% 0.15761 27.70)",
+          "oklch(51% 0.15761 27.70)",
+          "oklch(63% 0.15761 27.70)",
+          "oklch(75% 0.15761 27.70)",
+          "oklch(87% 0.15761 27.70)",
+          "oklch(95% 0.15761 27.70)"
+        ]
+      },
+      "destructive-foreground": {
+        "role": "tertiary",
+        "displayName": "Light on red clay",
+        "tonalRamp": [
+          "oklch(15% 0.00000 0.00)",
+          "oklch(27% 0.00000 0.00)",
+          "oklch(39% 0.00000 0.00)",
+          "oklch(51% 0.00000 0.00)",
+          "oklch(63% 0.00000 0.00)",
+          "oklch(75% 0.00000 0.00)",
+          "oklch(87% 0.00000 0.00)",
+          "oklch(95% 0.00000 0.00)"
+        ]
+      },
+      "border": {
+        "role": "neutral",
+        "displayName": "Paper edge",
+        "tonalRamp": [
+          "oklch(15% 0.01390 87.50)",
+          "oklch(27% 0.01390 87.50)",
+          "oklch(39% 0.01390 87.50)",
+          "oklch(51% 0.01390 87.50)",
+          "oklch(63% 0.01390 87.50)",
+          "oklch(75% 0.01390 87.50)",
+          "oklch(87% 0.01390 87.50)",
+          "oklch(95% 0.01390 87.50)"
+        ]
+      },
+      "input": {
+        "role": "neutral",
+        "displayName": "Field edge",
+        "tonalRamp": [
+          "oklch(15% 0.02112 87.53)",
+          "oklch(27% 0.02112 87.53)",
+          "oklch(39% 0.02112 87.53)",
+          "oklch(51% 0.02112 87.53)",
+          "oklch(63% 0.02112 87.53)",
+          "oklch(75% 0.02112 87.53)",
+          "oklch(87% 0.02112 87.53)",
+          "oklch(95% 0.02112 87.53)"
+        ]
+      },
+      "ring": {
+        "role": "primary",
+        "displayName": "Forest focus",
+        "tonalRamp": [
+          "oklch(15% 0.06674 167.40)",
+          "oklch(27% 0.06674 167.40)",
+          "oklch(39% 0.06674 167.40)",
+          "oklch(51% 0.06674 167.40)",
+          "oklch(63% 0.06674 167.40)",
+          "oklch(75% 0.06674 167.40)",
+          "oklch(87% 0.06674 167.40)",
+          "oklch(95% 0.06674 167.40)"
+        ]
+      },
+      "sunlight": {
+        "role": "primary",
+        "displayName": "Sunlight",
+        "tonalRamp": [
+          "oklch(15% 0.11318 88.45)",
+          "oklch(27% 0.11318 88.45)",
+          "oklch(39% 0.11318 88.45)",
+          "oklch(51% 0.11318 88.45)",
+          "oklch(63% 0.11318 88.45)",
+          "oklch(75% 0.11318 88.45)",
+          "oklch(87% 0.11318 88.45)",
+          "oklch(95% 0.11318 88.45)"
+        ]
+      },
+      "project-accent": {
+        "role": "secondary",
+        "displayName": "Project saffron",
+        "tonalRamp": [
+          "oklch(15% 0.13426 83.41)",
+          "oklch(27% 0.13426 83.41)",
+          "oklch(39% 0.13426 83.41)",
+          "oklch(51% 0.13426 83.41)",
+          "oklch(63% 0.13426 83.41)",
+          "oklch(75% 0.13426 83.41)",
+          "oklch(87% 0.13426 83.41)",
+          "oklch(95% 0.13426 83.41)"
+        ]
+      },
+      "project-soft": {
+        "role": "secondary",
+        "displayName": "Soft saffron",
+        "tonalRamp": [
+          "oklch(15% 0.03051 87.55)",
+          "oklch(27% 0.03051 87.55)",
+          "oklch(39% 0.03051 87.55)",
+          "oklch(51% 0.03051 87.55)",
+          "oklch(63% 0.03051 87.55)",
+          "oklch(75% 0.03051 87.55)",
+          "oklch(87% 0.03051 87.55)",
+          "oklch(95% 0.03051 87.55)"
+        ]
+      },
+      "project-ink": {
+        "role": "secondary",
+        "displayName": "Saffron ink",
+        "tonalRamp": [
+          "oklch(15% 0.08322 65.30)",
+          "oklch(27% 0.08322 65.30)",
+          "oklch(39% 0.08322 65.30)",
+          "oklch(51% 0.08322 65.30)",
+          "oklch(63% 0.08322 65.30)",
+          "oklch(75% 0.08322 65.30)",
+          "oklch(87% 0.08322 65.30)",
+          "oklch(95% 0.08322 65.30)"
+        ]
+      },
+      "background-dark": {
+        "role": "neutral",
+        "displayName": "After hours: Warm ivory",
+        "tonalRamp": [
+          "oklch(15% 0.00908 164.01)",
+          "oklch(27% 0.00908 164.01)",
+          "oklch(39% 0.00908 164.01)",
+          "oklch(51% 0.00908 164.01)",
+          "oklch(63% 0.00908 164.01)",
+          "oklch(75% 0.00908 164.01)",
+          "oklch(87% 0.00908 164.01)",
+          "oklch(95% 0.00908 164.01)"
+        ]
+      },
+      "foreground-dark": {
+        "role": "neutral",
+        "displayName": "After hours: Dark ink",
+        "tonalRamp": [
+          "oklch(15% 0.00929 91.49)",
+          "oklch(27% 0.00929 91.49)",
+          "oklch(39% 0.00929 91.49)",
+          "oklch(51% 0.00929 91.49)",
+          "oklch(63% 0.00929 91.49)",
+          "oklch(75% 0.00929 91.49)",
+          "oklch(87% 0.00929 91.49)",
+          "oklch(95% 0.00929 91.49)"
+        ]
+      },
+      "card-dark": {
+        "role": "neutral",
+        "displayName": "After hours: Light paper",
+        "tonalRamp": [
+          "oklch(15% 0.01026 164.04)",
+          "oklch(27% 0.01026 164.04)",
+          "oklch(39% 0.01026 164.04)",
+          "oklch(51% 0.01026 164.04)",
+          "oklch(63% 0.01026 164.04)",
+          "oklch(75% 0.01026 164.04)",
+          "oklch(87% 0.01026 164.04)",
+          "oklch(95% 0.01026 164.04)"
+        ]
+      },
+      "card-foreground-dark": {
+        "role": "neutral",
+        "displayName": "After hours: Paper ink",
+        "tonalRamp": [
+          "oklch(15% 0.00929 91.49)",
+          "oklch(27% 0.00929 91.49)",
+          "oklch(39% 0.00929 91.49)",
+          "oklch(51% 0.00929 91.49)",
+          "oklch(63% 0.00929 91.49)",
+          "oklch(75% 0.00929 91.49)",
+          "oklch(87% 0.00929 91.49)",
+          "oklch(95% 0.00929 91.49)"
+        ]
+      },
+      "popover-dark": {
+        "role": "neutral",
+        "displayName": "After hours: Popover paper",
+        "tonalRamp": [
+          "oklch(15% 0.01159 163.99)",
+          "oklch(27% 0.01159 163.99)",
+          "oklch(39% 0.01159 163.99)",
+          "oklch(51% 0.01159 163.99)",
+          "oklch(63% 0.01159 163.99)",
+          "oklch(75% 0.01159 163.99)",
+          "oklch(87% 0.01159 163.99)",
+          "oklch(95% 0.01159 163.99)"
+        ]
+      },
+      "popover-foreground-dark": {
+        "role": "neutral",
+        "displayName": "After hours: Popover ink",
+        "tonalRamp": [
+          "oklch(15% 0.00929 91.49)",
+          "oklch(27% 0.00929 91.49)",
+          "oklch(39% 0.00929 91.49)",
+          "oklch(51% 0.00929 91.49)",
+          "oklch(63% 0.00929 91.49)",
+          "oklch(75% 0.00929 91.49)",
+          "oklch(87% 0.00929 91.49)",
+          "oklch(95% 0.00929 91.49)"
+        ]
+      },
+      "primary-dark": {
+        "role": "primary",
+        "displayName": "After hours: Forest green",
+        "tonalRamp": [
+          "oklch(15% 0.05440 165.81)",
+          "oklch(27% 0.05440 165.81)",
+          "oklch(39% 0.05440 165.81)",
+          "oklch(51% 0.05440 165.81)",
+          "oklch(63% 0.05440 165.81)",
+          "oklch(75% 0.05440 165.81)",
+          "oklch(87% 0.05440 165.81)",
+          "oklch(95% 0.05440 165.81)"
+        ]
+      },
+      "primary-foreground-dark": {
+        "role": "primary",
+        "displayName": "After hours: Paper on forest",
+        "tonalRamp": [
+          "oklch(15% 0.03439 166.23)",
+          "oklch(27% 0.03439 166.23)",
+          "oklch(39% 0.03439 166.23)",
+          "oklch(51% 0.03439 166.23)",
+          "oklch(63% 0.03439 166.23)",
+          "oklch(75% 0.03439 166.23)",
+          "oklch(87% 0.03439 166.23)",
+          "oklch(95% 0.03439 166.23)"
+        ]
+      },
+      "secondary-dark": {
+        "role": "neutral",
+        "displayName": "After hours: Oat",
+        "tonalRamp": [
+          "oklch(15% 0.01442 159.97)",
+          "oklch(27% 0.01442 159.97)",
+          "oklch(39% 0.01442 159.97)",
+          "oklch(51% 0.01442 159.97)",
+          "oklch(63% 0.01442 159.97)",
+          "oklch(75% 0.01442 159.97)",
+          "oklch(87% 0.01442 159.97)",
+          "oklch(95% 0.01442 159.97)"
+        ]
+      },
+      "secondary-foreground-dark": {
+        "role": "neutral",
+        "displayName": "After hours: Oat ink",
+        "tonalRamp": [
+          "oklch(15% 0.00929 91.49)",
+          "oklch(27% 0.00929 91.49)",
+          "oklch(39% 0.00929 91.49)",
+          "oklch(51% 0.00929 91.49)",
+          "oklch(63% 0.00929 91.49)",
+          "oklch(75% 0.00929 91.49)",
+          "oklch(87% 0.00929 91.49)",
+          "oklch(95% 0.00929 91.49)"
+        ]
+      },
+      "muted-dark": {
+        "role": "neutral",
+        "displayName": "After hours: Soft paper",
+        "tonalRamp": [
+          "oklch(15% 0.01267 160.00)",
+          "oklch(27% 0.01267 160.00)",
+          "oklch(39% 0.01267 160.00)",
+          "oklch(51% 0.01267 160.00)",
+          "oklch(63% 0.01267 160.00)",
+          "oklch(75% 0.01267 160.00)",
+          "oklch(87% 0.01267 160.00)",
+          "oklch(95% 0.01267 160.00)"
+        ]
+      },
+      "muted-foreground-dark": {
+        "role": "neutral",
+        "displayName": "After hours: Secondary ink",
+        "tonalRamp": [
+          "oklch(15% 0.01755 153.48)",
+          "oklch(27% 0.01755 153.48)",
+          "oklch(39% 0.01755 153.48)",
+          "oklch(51% 0.01755 153.48)",
+          "oklch(63% 0.01755 153.48)",
+          "oklch(75% 0.01755 153.48)",
+          "oklch(87% 0.01755 153.48)",
+          "oklch(95% 0.01755 153.48)"
+        ]
+      },
+      "accent-dark": {
+        "role": "neutral",
+        "displayName": "After hours: Quiet green tint",
+        "tonalRamp": [
+          "oklch(15% 0.02750 163.76)",
+          "oklch(27% 0.02750 163.76)",
+          "oklch(39% 0.02750 163.76)",
+          "oklch(51% 0.02750 163.76)",
+          "oklch(63% 0.02750 163.76)",
+          "oklch(75% 0.02750 163.76)",
+          "oklch(87% 0.02750 163.76)",
+          "oklch(95% 0.02750 163.76)"
+        ]
+      },
+      "accent-foreground-dark": {
+        "role": "neutral",
+        "displayName": "After hours: Quiet green ink",
+        "tonalRamp": [
+          "oklch(15% 0.04267 166.35)",
+          "oklch(27% 0.04267 166.35)",
+          "oklch(39% 0.04267 166.35)",
+          "oklch(51% 0.04267 166.35)",
+          "oklch(63% 0.04267 166.35)",
+          "oklch(75% 0.04267 166.35)",
+          "oklch(87% 0.04267 166.35)",
+          "oklch(95% 0.04267 166.35)"
+        ]
+      },
+      "destructive-dark": {
+        "role": "tertiary",
+        "displayName": "After hours: Red clay",
+        "tonalRamp": [
+          "oklch(15% 0.12943 26.13)",
+          "oklch(27% 0.12943 26.13)",
+          "oklch(39% 0.12943 26.13)",
+          "oklch(51% 0.12943 26.13)",
+          "oklch(63% 0.12943 26.13)",
+          "oklch(75% 0.12943 26.13)",
+          "oklch(87% 0.12943 26.13)",
+          "oklch(95% 0.12943 26.13)"
+        ]
+      },
+      "destructive-foreground-dark": {
+        "role": "tertiary",
+        "displayName": "After hours: Light on red clay",
+        "tonalRamp": [
+          "oklch(15% 0.03849 20.64)",
+          "oklch(27% 0.03849 20.64)",
+          "oklch(39% 0.03849 20.64)",
+          "oklch(51% 0.03849 20.64)",
+          "oklch(63% 0.03849 20.64)",
+          "oklch(75% 0.03849 20.64)",
+          "oklch(87% 0.03849 20.64)",
+          "oklch(95% 0.03849 20.64)"
+        ]
+      },
+      "border-dark": {
+        "role": "neutral",
+        "displayName": "After hours: Paper edge",
+        "tonalRamp": [
+          "oklch(15% 0.01463 160.07)",
+          "oklch(27% 0.01463 160.07)",
+          "oklch(39% 0.01463 160.07)",
+          "oklch(51% 0.01463 160.07)",
+          "oklch(63% 0.01463 160.07)",
+          "oklch(75% 0.01463 160.07)",
+          "oklch(87% 0.01463 160.07)",
+          "oklch(95% 0.01463 160.07)"
+        ]
+      },
+      "input-dark": {
+        "role": "neutral",
+        "displayName": "After hours: Field edge",
+        "tonalRamp": [
+          "oklch(15% 0.02069 160.01)",
+          "oklch(27% 0.02069 160.01)",
+          "oklch(39% 0.02069 160.01)",
+          "oklch(51% 0.02069 160.01)",
+          "oklch(63% 0.02069 160.01)",
+          "oklch(75% 0.02069 160.01)",
+          "oklch(87% 0.02069 160.01)",
+          "oklch(95% 0.02069 160.01)"
+        ]
+      },
+      "ring-dark": {
+        "role": "primary",
+        "displayName": "After hours: Forest focus",
+        "tonalRamp": [
+          "oklch(15% 0.05440 165.81)",
+          "oklch(27% 0.05440 165.81)",
+          "oklch(39% 0.05440 165.81)",
+          "oklch(51% 0.05440 165.81)",
+          "oklch(63% 0.05440 165.81)",
+          "oklch(75% 0.05440 165.81)",
+          "oklch(87% 0.05440 165.81)",
+          "oklch(95% 0.05440 165.81)"
+        ]
+      },
+      "sunlight-dark": {
+        "role": "primary",
+        "displayName": "After hours: Sunlight",
+        "tonalRamp": [
+          "oklch(15% 0.06226 88.01)",
+          "oklch(27% 0.06226 88.01)",
+          "oklch(39% 0.06226 88.01)",
+          "oklch(51% 0.06226 88.01)",
+          "oklch(63% 0.06226 88.01)",
+          "oklch(75% 0.06226 88.01)",
+          "oklch(87% 0.06226 88.01)",
+          "oklch(95% 0.06226 88.01)"
+        ]
+      },
+      "project-terracotta-accent": {
+        "role": "secondary",
+        "displayName": "Project terracotta",
+        "tonalRamp": [
+          "oklch(15% 0.10171 39.18)",
+          "oklch(27% 0.10171 39.18)",
+          "oklch(39% 0.10171 39.18)",
+          "oklch(51% 0.10171 39.18)",
+          "oklch(63% 0.10171 39.18)",
+          "oklch(75% 0.10171 39.18)",
+          "oklch(87% 0.10171 39.18)",
+          "oklch(95% 0.10171 39.18)"
+        ]
+      },
+      "project-terracotta-soft": {
+        "role": "secondary",
+        "displayName": "Soft terracotta",
+        "tonalRamp": [
+          "oklch(15% 0.01962 42.95)",
+          "oklch(27% 0.01962 42.95)",
+          "oklch(39% 0.01962 42.95)",
+          "oklch(51% 0.01962 42.95)",
+          "oklch(63% 0.01962 42.95)",
+          "oklch(75% 0.01962 42.95)",
+          "oklch(87% 0.01962 42.95)",
+          "oklch(95% 0.01962 42.95)"
+        ]
+      },
+      "project-terracotta-ink": {
+        "role": "secondary",
+        "displayName": "Terracotta ink",
+        "tonalRamp": [
+          "oklch(15% 0.08159 35.07)",
+          "oklch(27% 0.08159 35.07)",
+          "oklch(39% 0.08159 35.07)",
+          "oklch(51% 0.08159 35.07)",
+          "oklch(63% 0.08159 35.07)",
+          "oklch(75% 0.08159 35.07)",
+          "oklch(87% 0.08159 35.07)",
+          "oklch(95% 0.08159 35.07)"
+        ]
+      },
+      "project-lilac-accent": {
+        "role": "secondary",
+        "displayName": "Project lilac",
+        "tonalRamp": [
+          "oklch(15% 0.07332 300.42)",
+          "oklch(27% 0.07332 300.42)",
+          "oklch(39% 0.07332 300.42)",
+          "oklch(51% 0.07332 300.42)",
+          "oklch(63% 0.07332 300.42)",
+          "oklch(75% 0.07332 300.42)",
+          "oklch(87% 0.07332 300.42)",
+          "oklch(95% 0.07332 300.42)"
+        ]
+      },
+      "project-lilac-soft": {
+        "role": "secondary",
+        "displayName": "Soft lilac",
+        "tonalRamp": [
+          "oklch(15% 0.01844 303.35)",
+          "oklch(27% 0.01844 303.35)",
+          "oklch(39% 0.01844 303.35)",
+          "oklch(51% 0.01844 303.35)",
+          "oklch(63% 0.01844 303.35)",
+          "oklch(75% 0.01844 303.35)",
+          "oklch(87% 0.01844 303.35)",
+          "oklch(95% 0.01844 303.35)"
+        ]
+      },
+      "project-lilac-ink": {
+        "role": "secondary",
+        "displayName": "Lilac ink",
+        "tonalRamp": [
+          "oklch(15% 0.08462 296.93)",
+          "oklch(27% 0.08462 296.93)",
+          "oklch(39% 0.08462 296.93)",
+          "oklch(51% 0.08462 296.93)",
+          "oklch(63% 0.08462 296.93)",
+          "oklch(75% 0.08462 296.93)",
+          "oklch(87% 0.08462 296.93)",
+          "oklch(95% 0.08462 296.93)"
+        ]
+      },
+      "project-green-accent": {
+        "role": "secondary",
+        "displayName": "Project green",
+        "tonalRamp": [
+          "oklch(15% 0.08238 167.11)",
+          "oklch(27% 0.08238 167.11)",
+          "oklch(39% 0.08238 167.11)",
+          "oklch(51% 0.08238 167.11)",
+          "oklch(63% 0.08238 167.11)",
+          "oklch(75% 0.08238 167.11)",
+          "oklch(87% 0.08238 167.11)",
+          "oklch(95% 0.08238 167.11)"
+        ]
+      },
+      "project-green-soft": {
+        "role": "secondary",
+        "displayName": "Soft project green",
+        "tonalRamp": [
+          "oklch(15% 0.01819 165.49)",
+          "oklch(27% 0.01819 165.49)",
+          "oklch(39% 0.01819 165.49)",
+          "oklch(51% 0.01819 165.49)",
+          "oklch(63% 0.01819 165.49)",
+          "oklch(75% 0.01819 165.49)",
+          "oklch(87% 0.01819 165.49)",
+          "oklch(95% 0.01819 165.49)"
+        ]
+      },
+      "project-green-ink": {
+        "role": "secondary",
+        "displayName": "Project green ink",
+        "tonalRamp": [
+          "oklch(15% 0.06313 167.03)",
+          "oklch(27% 0.06313 167.03)",
+          "oklch(39% 0.06313 167.03)",
+          "oklch(51% 0.06313 167.03)",
+          "oklch(63% 0.06313 167.03)",
+          "oklch(75% 0.06313 167.03)",
+          "oklch(87% 0.06313 167.03)",
+          "oklch(95% 0.06313 167.03)"
+        ]
+      },
+      "warning-background": {
+        "role": "tertiary",
+        "displayName": "Warning paper",
+        "tonalRamp": [
+          "oklch(15% 0.02641 83.06)",
+          "oklch(27% 0.02641 83.06)",
+          "oklch(39% 0.02641 83.06)",
+          "oklch(51% 0.02641 83.06)",
+          "oklch(63% 0.02641 83.06)",
+          "oklch(75% 0.02641 83.06)",
+          "oklch(87% 0.02641 83.06)",
+          "oklch(95% 0.02641 83.06)"
+        ]
+      },
+      "warning-foreground": {
+        "role": "tertiary",
+        "displayName": "Warning ink",
+        "tonalRamp": [
+          "oklch(15% 0.08322 65.30)",
+          "oklch(27% 0.08322 65.30)",
+          "oklch(39% 0.08322 65.30)",
+          "oklch(51% 0.08322 65.30)",
+          "oklch(63% 0.08322 65.30)",
+          "oklch(75% 0.08322 65.30)",
+          "oklch(87% 0.08322 65.30)",
+          "oklch(95% 0.08322 65.30)"
+        ]
+      },
+      "warning-border": {
+        "role": "tertiary",
+        "displayName": "Warning edge",
+        "tonalRamp": [
+          "oklch(15% 0.07708 82.63)",
+          "oklch(27% 0.07708 82.63)",
+          "oklch(39% 0.07708 82.63)",
+          "oklch(51% 0.07708 82.63)",
+          "oklch(63% 0.07708 82.63)",
+          "oklch(75% 0.07708 82.63)",
+          "oklch(87% 0.07708 82.63)",
+          "oklch(95% 0.07708 82.63)"
+        ]
+      },
+      "warning-background-dark": {
+        "role": "tertiary",
+        "displayName": "After hours: Warning paper",
+        "tonalRamp": [
+          "oklch(15% 0.02763 75.84)",
+          "oklch(27% 0.02763 75.84)",
+          "oklch(39% 0.02763 75.84)",
+          "oklch(51% 0.02763 75.84)",
+          "oklch(63% 0.02763 75.84)",
+          "oklch(75% 0.02763 75.84)",
+          "oklch(87% 0.02763 75.84)",
+          "oklch(95% 0.02763 75.84)"
+        ]
+      },
+      "warning-foreground-dark": {
+        "role": "tertiary",
+        "displayName": "After hours: Warning ink",
+        "tonalRamp": [
+          "oklch(15% 0.08745 88.87)",
+          "oklch(27% 0.08745 88.87)",
+          "oklch(39% 0.08745 88.87)",
+          "oklch(51% 0.08745 88.87)",
+          "oklch(63% 0.08745 88.87)",
+          "oklch(75% 0.08745 88.87)",
+          "oklch(87% 0.08745 88.87)",
+          "oklch(95% 0.08745 88.87)"
+        ]
+      },
+      "warning-border-dark": {
+        "role": "tertiary",
+        "displayName": "After hours: Warning edge",
+        "tonalRamp": [
+          "oklch(15% 0.05901 76.95)",
+          "oklch(27% 0.05901 76.95)",
+          "oklch(39% 0.05901 76.95)",
+          "oklch(51% 0.05901 76.95)",
+          "oklch(63% 0.05901 76.95)",
+          "oklch(75% 0.05901 76.95)",
+          "oklch(87% 0.05901 76.95)",
+          "oklch(95% 0.05901 76.95)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Editorial display",
+        "purpose": "Responsive landing headline; Fraunces with an italic emphasized phrase."
+      },
+      "headline": {
+        "displayName": "Editorial introduction",
+        "purpose": "The base project/setup headline; larger variants appear from 640px."
+      },
+      "page-title": {
+        "displayName": "Operating page title",
+        "purpose": "Semibold Manrope title on task, team, notification, and settings screens."
+      },
+      "title": {
+        "displayName": "Section title",
+        "purpose": "Manrope card and section headings with snug line height."
+      },
+      "body": {
+        "displayName": "Reading text",
+        "purpose": "Default text; compact operating content commonly uses the smaller role described in DESIGN.md."
+      },
+      "label": {
+        "displayName": "UI label",
+        "purpose": "Shared button labels; navigation deliberately uses medium weight."
+      },
+      "caption": {
+        "displayName": "Metadata",
+        "purpose": "Dates, counts, and status; project badges deliberately use semibold weight."
+      }
+    },
+    "shadows": [
+      {
+        "name": "action-rest",
+        "value": "0 3px 8px -5px hsl(var(--primary) / 0.5)",
+        "purpose": "Compact shadow under the primary action."
+      },
+      {
+        "name": "action-hover",
+        "value": "0 8px 22px -10px hsl(var(--primary) / 0.5)",
+        "purpose": "Primary action hover on fine-pointer devices."
+      },
+      {
+        "name": "demo-sheet",
+        "value": "0 20px 55px -25px hsl(38 44% 32% / 0.32)",
+        "purpose": "Atmosphere beneath the illustrative landing sheet."
+      },
+      {
+        "name": "hero-photo",
+        "value": "0 5px 18px -8px hsl(30 25% 25% / 0.25)",
+        "purpose": "Small lift beneath the rotated illustrative photograph."
+      },
+      {
+        "name": "overlay-xl",
+        "value": "0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)",
+        "purpose": "Tailwind shadow-xl on dialogs and the mobile navigation drawer."
+      },
+      {
+        "name": "control-focus",
+        "value": "0 0 0 2px hsl(var(--background)), 0 0 0 4px hsl(var(--ring))",
+        "purpose": "Two-pixel focus ring with a two-pixel background offset, expanded from shared control utilities."
+      }
+    ],
+    "motion": [
+      {
+        "name": "control-state",
+        "value": "160ms ease-out",
+        "purpose": "Shared button color, shadow, and transform transitions."
+      },
+      {
+        "name": "control-press",
+        "value": "scale(0.97)",
+        "purpose": "Enabled button press; removed for reduced motion."
+      },
+      {
+        "name": "primary-hover-lift",
+        "value": "translateY(-1px)",
+        "purpose": "Primary hover feedback on a hover-capable fine pointer; removed for reduced motion."
+      },
+      {
+        "name": "sunlight-sweep",
+        "value": "650ms ease-out",
+        "purpose": "One sunlight sweep when hovering the landing call to action."
+      },
+      {
+        "name": "dialog",
+        "value": "150ms",
+        "purpose": "Dialog fade and 95% zoom enter/exit treatment."
+      },
+      {
+        "name": "accordion",
+        "value": "0.2s ease-out",
+        "purpose": "Configured Radix accordion expansion/collapse."
+      },
+      {
+        "name": "reduced-motion",
+        "value": "0.01ms",
+        "purpose": "Global transition/animation duration with one animation iteration, automatic scrolling, and no button hover/press transform."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "sm",
+        "value": "640px"
+      },
+      {
+        "name": "md",
+        "value": "768px"
+      },
+      {
+        "name": "lg",
+        "value": "1024px"
+      },
+      {
+        "name": "xl",
+        "value": "1280px"
+      },
+      {
+        "name": "2xl",
+        "value": "1536px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The global forest-green action; project identity does not recolor it.",
+      "html": "<button type=\"button\" class=\"ds-button-primary\">Open task board <svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M5 12h14M12 5l7 7-7 7\"/></svg></button>",
+      "css": ".ds-button-primary { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; white-space: nowrap; height: 2.75rem; padding: 0.5rem 1rem; border: 0; border-radius: var(--radius); font-family: \"Manrope Variable\", ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\", \"Noto Color Emoji\"; font-size: 0.875rem; line-height: 1.25rem; font-weight: 600; cursor: pointer; transition: background-color 160ms ease-out, color 160ms ease-out, box-shadow 160ms ease-out, transform 160ms ease-out; } .ds-button-primary svg { width: 1rem; height: 1rem; flex-shrink: 0; pointer-events: none; } .ds-button-primary:focus-visible { outline: none; box-shadow: 0 0 0 2px hsl(var(--background)), 0 0 0 4px hsl(var(--ring)); } .ds-button-primary:active:not(:disabled):not([aria-disabled=\"true\"]) { transform: scale(0.97); } .ds-button-primary:disabled { opacity: 0.5; cursor: not-allowed; } .ds-button-primary[aria-disabled=\"true\"] { opacity: 0.7; } .ds-button-primary[data-pending=\"true\"] { cursor: wait; } @media (prefers-reduced-motion: reduce) { .ds-button-primary { transition-duration: 0.01ms !important; } .ds-button-primary:active, .ds-button-primary:hover { transform: none !important; } } .ds-button-primary { background: hsl(var(--primary)); color: hsl(var(--primary-foreground)); box-shadow: 0 3px 8px -5px hsl(var(--primary) / 0.5); } .ds-button-primary:hover { background: hsl(var(--primary) / 0.9); } @media (hover: hover) and (pointer: fine) { .ds-button-primary:hover { box-shadow: 0 8px 22px -10px hsl(var(--primary) / 0.5); transform: translateY(-1px); } } .ds-button-primary:focus-visible { box-shadow: 0 0 0 2px hsl(var(--background)), 0 0 0 4px hsl(var(--ring)); } @media (prefers-reduced-motion: reduce) { .ds-button-primary:hover { transform: none !important; } }"
+    },
+    {
+      "name": "Destructive Button",
+      "kind": "button",
+      "refersTo": "button-destructive",
+      "description": "Red-clay treatment for an explicit destructive action.",
+      "html": "<button type=\"button\" class=\"ds-button-destructive\">Delete project</button>",
+      "css": ".ds-button-destructive { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; white-space: nowrap; height: 2.75rem; padding: 0.5rem 1rem; border: 0; border-radius: var(--radius); font-family: \"Manrope Variable\", ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\", \"Noto Color Emoji\"; font-size: 0.875rem; line-height: 1.25rem; font-weight: 600; cursor: pointer; transition: background-color 160ms ease-out, color 160ms ease-out, box-shadow 160ms ease-out, transform 160ms ease-out; } .ds-button-destructive svg { width: 1rem; height: 1rem; flex-shrink: 0; pointer-events: none; } .ds-button-destructive:focus-visible { outline: none; box-shadow: 0 0 0 2px hsl(var(--background)), 0 0 0 4px hsl(var(--ring)); } .ds-button-destructive:active:not(:disabled):not([aria-disabled=\"true\"]) { transform: scale(0.97); } .ds-button-destructive:disabled { opacity: 0.5; cursor: not-allowed; } .ds-button-destructive[aria-disabled=\"true\"] { opacity: 0.7; } .ds-button-destructive[data-pending=\"true\"] { cursor: wait; } @media (prefers-reduced-motion: reduce) { .ds-button-destructive { transition-duration: 0.01ms !important; } .ds-button-destructive:active, .ds-button-destructive:hover { transform: none !important; } } .ds-button-destructive { background: hsl(var(--destructive)); color: hsl(var(--destructive-foreground)); } .ds-button-destructive:hover { background: hsl(var(--destructive) / 0.9); }"
+    },
+    {
+      "name": "Outline Button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "A bordered secondary action on the page ground.",
+      "html": "<button type=\"button\" class=\"ds-button-outline\">Cancel</button>",
+      "css": ".ds-button-outline { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; white-space: nowrap; height: 2.75rem; padding: 0.5rem 1rem; border: 0; border-radius: var(--radius); font-family: \"Manrope Variable\", ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\", \"Noto Color Emoji\"; font-size: 0.875rem; line-height: 1.25rem; font-weight: 600; cursor: pointer; transition: background-color 160ms ease-out, color 160ms ease-out, box-shadow 160ms ease-out, transform 160ms ease-out; } .ds-button-outline svg { width: 1rem; height: 1rem; flex-shrink: 0; pointer-events: none; } .ds-button-outline:focus-visible { outline: none; box-shadow: 0 0 0 2px hsl(var(--background)), 0 0 0 4px hsl(var(--ring)); } .ds-button-outline:active:not(:disabled):not([aria-disabled=\"true\"]) { transform: scale(0.97); } .ds-button-outline:disabled { opacity: 0.5; cursor: not-allowed; } .ds-button-outline[aria-disabled=\"true\"] { opacity: 0.7; } .ds-button-outline[data-pending=\"true\"] { cursor: wait; } @media (prefers-reduced-motion: reduce) { .ds-button-outline { transition-duration: 0.01ms !important; } .ds-button-outline:active, .ds-button-outline:hover { transform: none !important; } } .ds-button-outline { border: 1px solid hsl(var(--input)); background: hsl(var(--background)); color: hsl(var(--foreground)); } .ds-button-outline:hover { background: hsl(var(--accent)); color: hsl(var(--accent-foreground)); }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "A quiet oat surface for a supporting or selected control.",
+      "html": "<button type=\"button\" class=\"ds-button-secondary\">Board</button>",
+      "css": ".ds-button-secondary { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; white-space: nowrap; height: 2.75rem; padding: 0.5rem 1rem; border: 0; border-radius: var(--radius); font-family: \"Manrope Variable\", ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\", \"Noto Color Emoji\"; font-size: 0.875rem; line-height: 1.25rem; font-weight: 600; cursor: pointer; transition: background-color 160ms ease-out, color 160ms ease-out, box-shadow 160ms ease-out, transform 160ms ease-out; } .ds-button-secondary svg { width: 1rem; height: 1rem; flex-shrink: 0; pointer-events: none; } .ds-button-secondary:focus-visible { outline: none; box-shadow: 0 0 0 2px hsl(var(--background)), 0 0 0 4px hsl(var(--ring)); } .ds-button-secondary:active:not(:disabled):not([aria-disabled=\"true\"]) { transform: scale(0.97); } .ds-button-secondary:disabled { opacity: 0.5; cursor: not-allowed; } .ds-button-secondary[aria-disabled=\"true\"] { opacity: 0.7; } .ds-button-secondary[data-pending=\"true\"] { cursor: wait; } @media (prefers-reduced-motion: reduce) { .ds-button-secondary { transition-duration: 0.01ms !important; } .ds-button-secondary:active, .ds-button-secondary:hover { transform: none !important; } } .ds-button-secondary { background: hsl(var(--secondary)); color: hsl(var(--secondary-foreground)); } .ds-button-secondary:hover { background: hsl(var(--secondary) / 0.8); }"
+    },
+    {
+      "name": "Ghost Button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Low-emphasis controls gain a quiet green surface on hover.",
+      "html": "<button type=\"button\" class=\"ds-button-ghost\">Clear all filters</button>",
+      "css": ".ds-button-ghost { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; white-space: nowrap; height: 2.75rem; padding: 0.5rem 1rem; border: 0; border-radius: var(--radius); font-family: \"Manrope Variable\", ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\", \"Noto Color Emoji\"; font-size: 0.875rem; line-height: 1.25rem; font-weight: 600; cursor: pointer; transition: background-color 160ms ease-out, color 160ms ease-out, box-shadow 160ms ease-out, transform 160ms ease-out; } .ds-button-ghost svg { width: 1rem; height: 1rem; flex-shrink: 0; pointer-events: none; } .ds-button-ghost:focus-visible { outline: none; box-shadow: 0 0 0 2px hsl(var(--background)), 0 0 0 4px hsl(var(--ring)); } .ds-button-ghost:active:not(:disabled):not([aria-disabled=\"true\"]) { transform: scale(0.97); } .ds-button-ghost:disabled { opacity: 0.5; cursor: not-allowed; } .ds-button-ghost[aria-disabled=\"true\"] { opacity: 0.7; } .ds-button-ghost[data-pending=\"true\"] { cursor: wait; } @media (prefers-reduced-motion: reduce) { .ds-button-ghost { transition-duration: 0.01ms !important; } .ds-button-ghost:active, .ds-button-ghost:hover { transform: none !important; } } .ds-button-ghost { background: transparent; color: hsl(var(--foreground)); } .ds-button-ghost:hover { background: hsl(var(--accent)); color: hsl(var(--accent-foreground)); }"
+    },
+    {
+      "name": "Link Button",
+      "kind": "button",
+      "refersTo": "button-link",
+      "description": "A text action using the global primary color and hover underline.",
+      "html": "<button type=\"button\" class=\"ds-button-link\">Back to sign in</button>",
+      "css": ".ds-button-link { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; white-space: nowrap; height: 2.75rem; padding: 0.5rem 1rem; border: 0; border-radius: var(--radius); font-family: \"Manrope Variable\", ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\", \"Noto Color Emoji\"; font-size: 0.875rem; line-height: 1.25rem; font-weight: 600; cursor: pointer; transition: background-color 160ms ease-out, color 160ms ease-out, box-shadow 160ms ease-out, transform 160ms ease-out; } .ds-button-link svg { width: 1rem; height: 1rem; flex-shrink: 0; pointer-events: none; } .ds-button-link:focus-visible { outline: none; box-shadow: 0 0 0 2px hsl(var(--background)), 0 0 0 4px hsl(var(--ring)); } .ds-button-link:active:not(:disabled):not([aria-disabled=\"true\"]) { transform: scale(0.97); } .ds-button-link:disabled { opacity: 0.5; cursor: not-allowed; } .ds-button-link[aria-disabled=\"true\"] { opacity: 0.7; } .ds-button-link[data-pending=\"true\"] { cursor: wait; } @media (prefers-reduced-motion: reduce) { .ds-button-link { transition-duration: 0.01ms !important; } .ds-button-link:active, .ds-button-link:hover { transform: none !important; } } .ds-button-link { background: transparent; color: hsl(var(--primary)); text-underline-offset: 4px; } .ds-button-link:hover { text-decoration-line: underline; }"
+    },
+    {
+      "name": "Text Field",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "The shared field: readable 16px input on phones, with an explicit focus ring.",
+      "html": "<input class=\"ds-input\" type=\"text\" aria-label=\"Task title\" placeholder=\"e.g. Review the first prototype\" />",
+      "css": ".ds-input { display: flex; height: 2.5rem; width: 100%; border: 1px solid hsl(var(--input)); border-radius: calc(var(--radius) - 2px); background: hsl(var(--background)); color: hsl(var(--foreground)); padding: 0.5rem 0.75rem; font-family: \"Manrope Variable\", ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\", \"Noto Color Emoji\"; font-size: 1rem; line-height: 1.5rem; caret-color: hsl(var(--primary)); } .ds-input::placeholder { color: hsl(var(--muted-foreground)); } .ds-input:focus-visible { outline: none; box-shadow: 0 0 0 2px hsl(var(--background)), 0 0 0 4px hsl(var(--ring)); } .ds-input:disabled { opacity: 0.5; cursor: not-allowed; } @media (min-width: 768px) { .ds-input { font-size: 0.875rem; line-height: 1.25rem; } }"
+    },
+    {
+      "name": "Workspace Navigation",
+      "kind": "nav",
+      "refersTo": "workspace-nav",
+      "description": "Grouped workspace links with a labeled active page and a 44px minimum target.",
+      "html": "<nav class=\"ds-nav\" aria-label=\"Workspace navigation\"><a class=\"ds-nav-link\" href=\"#overview\" aria-current=\"page\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" aria-hidden=\"true\"><rect x=\"3\" y=\"3\" width=\"7\" height=\"9\" rx=\"1\"/><rect x=\"14\" y=\"3\" width=\"7\" height=\"5\" rx=\"1\"/><rect x=\"14\" y=\"12\" width=\"7\" height=\"9\" rx=\"1\"/><rect x=\"3\" y=\"16\" width=\"7\" height=\"5\" rx=\"1\"/></svg>Overview</a><a class=\"ds-nav-link\" href=\"#tasks\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m9 11 3 3L22 4\"/><path d=\"M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11\"/></svg>Tasks</a></nav>",
+      "css": ".ds-nav { display: grid; gap: 0.25rem; } .ds-nav-link { display: flex; min-height: 2.75rem; align-items: center; gap: 0.75rem; padding: 0 0.75rem; border-radius: var(--radius); color: hsl(var(--muted-foreground)); text-decoration: none; font-family: \"Manrope Variable\", ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\", \"Noto Color Emoji\"; font-size: 0.875rem; line-height: 1.25rem; font-weight: 500; transition: color 150ms cubic-bezier(0.4, 0, 0.2, 1), background-color 150ms cubic-bezier(0.4, 0, 0.2, 1); } .ds-nav-link svg { width: 18px; height: 18px; flex-shrink: 0; } .ds-nav-link:hover { background: hsl(var(--muted)); color: hsl(var(--foreground)); } .ds-nav-link[aria-current=\"page\"] { background: hsl(var(--primary) / 0.1); color: hsl(var(--primary)); } .ds-nav-link:focus-visible { outline: 2px solid hsl(var(--ring)); outline-offset: 4px; } @media (prefers-reduced-motion: reduce) { .ds-nav-link { transition-duration: 0.01ms !important; } }"
+    },
+    {
+      "name": "Project Badge",
+      "kind": "chip",
+      "refersTo": "project-badge",
+      "description": "A stable project identity badge, distinct from semantic status.",
+      "html": "<span class=\"ds-project-badge\"><span class=\"ds-project-dot\" aria-hidden=\"true\"></span>Team project</span>",
+      "css": ".ds-project-badge { display: inline-flex; align-items: center; gap: 0.5rem; border-radius: calc(var(--radius) - 2px); padding: 0.25rem 0.625rem; background: hsl(var(--project-soft)); color: hsl(var(--project-ink)); font-family: \"Manrope Variable\", ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\", \"Noto Color Emoji\"; font-size: 0.75rem; line-height: 1rem; font-weight: 600; } .ds-project-dot { width: 0.65rem; height: 0.65rem; flex-shrink: 0; border-radius: 50%; background: hsl(var(--project-accent)); }"
+    },
+    {
+      "name": "Working Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "A border-based paper surface with no default shadow and the shared Card section spacing.",
+      "html": "<section class=\"ds-card\" aria-labelledby=\"ds-card-title\"><header class=\"ds-card-header\"><h2 class=\"ds-card-title\" id=\"ds-card-title\">Project progress</h2><p class=\"ds-card-description\">A shared view of the work ahead.</p></header><div class=\"ds-card-content\"><p class=\"ds-card-body\">Tasks, milestones, and ownership stay close to the work.</p></div></section>",
+      "css": ".ds-card { border: 1px solid hsl(var(--border)); border-radius: 1rem; background: hsl(var(--card)); color: hsl(var(--card-foreground)); font-family: \"Manrope Variable\", ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\", \"Noto Color Emoji\"; } .ds-card-header { display: flex; flex-direction: column; gap: 0.375rem; padding: 1.5rem; } .ds-card-title { margin: 0; font-size: 1.125rem; font-weight: 600; line-height: 1.375; letter-spacing: -0.025em; text-wrap: balance; } .ds-card-description { margin: 0; font-size: 0.875rem; line-height: 1.25rem; color: hsl(var(--muted-foreground)); } .ds-card-content { padding: 0 1.5rem 1.5rem; } .ds-card-body { margin: 0; font-size: 0.875rem; line-height: 1.625; text-wrap: pretty; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "Light creative studio",
+    "overview": "Light creative studio brings warm ivory, readable dark ink, and forest-green actions to a shared student workspace. Fraunces gives important introductions an editorial voice; Manrope keeps tasks, dates, ownership, and controls easy to scan. Sunlight and focused glow add warmth around a meaningful action or illustrative scene.\n\nOne ClearTasks identity holds the work together. Each project receives a stable, restrained saffron, terracotta, lilac, or green accent, while borders and quiet surfaces establish structure. The interface feels alive through task completion, a clear pending label, and useful feedback. The confirmed visual rejection is a dashboard arranged as a bento grid of KPI tiles.",
+    "keyCharacteristics": [
+      "Warm paper surfaces with readable ink and forest-green actions.",
+      "Editorial Fraunces headlines paired with practical Manrope UI.",
+      "Stable project accents, separate from semantic status.",
+      "Border-based surfaces, purposeful sunlight, and subtle press feedback.",
+      "Responsive task lists and visible keyboard focus."
+    ],
+    "rules": [
+      {
+        "name": "The One Studio Rule",
+        "body": "Keep the global action and navigation identity on the primary tokens. Apply a project palette only through its three project tokens; changing projects must not recolor every action.",
+        "section": "colors"
+      },
+      {
+        "name": "The Meaning Before Hue Rule",
+        "body": "Use status text or an icon alongside color. A project accent identifies the project; it does not indicate overdue work, errors, completion, or priority.",
+        "section": "colors"
+      },
+      {
+        "name": "The Editorial Moment Rule",
+        "body": "Use Fraunces for the hero, project introductions, milestone names, and selected setup headlines. Keep controls, metadata, and dense task content in Manrope.",
+        "section": "typography"
+      },
+      {
+        "name": "The Border First Rule",
+        "body": "Use a border and surface change to separate working regions. Reserve larger shadows for overlays and the illustrative landing scene.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do reuse the semantic CSS variables and shared components so light, dark, and system appearance stay coherent.",
+      "Do keep stable project identity in the project accent, soft, and ink tokens while preserving global forest-green actions.",
+      "Do make status understandable through text or icons, and show the pending state of the real operation.",
+      "Do give phone users a readable task list, wrapping content, labeled controls, and keyboard focus.",
+      "Do use the shipped 480w/960w garden images only as illustrative imagery, with the landing example clearly identified.",
+      "Do respect reduced motion for transitions, press transforms, spinning indicators, and sunlight sweeps."
+    ],
+    "donts": [
+      "Don't build a bento dashboard of disconnected KPI tiles; keep task attention, progress, milestones, and workload in a readable hierarchy.",
+      "Don't use project accent color as an error, warning, priority, or completion signal.",
+      "Don't spread sunlight gradients and strong shadows across ordinary working cards.",
+      "Don't replace shared token values with a new palette or introduce a second identity for individual projects.",
+      "Don't turn the garden example, generated concept sample data, or extra concept tabs into product capabilities.",
+      "Don't invent staged AI progress, delivery preferences, or a cover-upload control that the implemented product does not support."
+    ]
+  }
+}
+

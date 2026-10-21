@@ -4,73 +4,358 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
- 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
- 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
- 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
- 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
- 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
- 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
- 
-    --radius: 0.5rem;
+    --background: 45 33% 96%;
+    --foreground: 145 9% 16%;
+    --card: 48 50% 99%;
+    --card-foreground: 145 9% 16%;
+    --popover: 48 50% 99%;
+    --popover-foreground: 145 9% 16%;
+    --primary: 159 43% 25%;
+    --primary-foreground: 45 40% 98%;
+    --secondary: 43 25% 91%;
+    --secondary-foreground: 145 9% 22%;
+    --muted: 45 24% 92%;
+    --muted-foreground: 140 5% 40%;
+    --accent: 150 19% 91%;
+    --accent-foreground: 159 43% 25%;
+    --destructive: 3 62% 40%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 42 17% 84%;
+    --input: 42 17% 76%;
+    --ring: 159 43% 25%;
+    --radius: 0.875rem;
+    --sunlight: 43 85% 72%;
+    --project-accent: 41 73% 58%;
+    --project-soft: 42 68% 91%;
+    --project-ink: 32 67% 26%;
+    color-scheme: light;
   }
- 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
- 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
- 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
- 
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
- 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
- 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
- 
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
- 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
- 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+    --background: 150 10% 10%;
+    --foreground: 45 22% 92%;
+    --card: 150 9% 13%;
+    --card-foreground: 45 22% 92%;
+    --popover: 150 9% 15%;
+    --popover-foreground: 45 22% 92%;
+    --primary: 153 31% 72%;
+    --primary-foreground: 156 35% 13%;
+    --secondary: 145 8% 21%;
+    --secondary-foreground: 45 22% 92%;
+    --muted: 145 8% 18%;
+    --muted-foreground: 135 7% 68%;
+    --accent: 151 16% 22%;
+    --accent-foreground: 153 31% 78%;
+    --destructive: 5 80% 72%;
+    --destructive-foreground: 0 38% 12%;
+    --border: 145 7% 25%;
+    --input: 145 7% 38%;
+    --ring: 153 31% 72%;
+    --sunlight: 43 45% 25%;
+    color-scheme: dark;
   }
-}
- 
-@layer base {
   * {
     @apply border-border;
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--border)) transparent;
+  }
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 5rem;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
+    margin: 0;
+  }
+  h1,
+  h2,
+  h3,
+  h4 {
+    text-wrap: balance;
+    letter-spacing: -0.025em;
+  }
+  p {
+    text-wrap: pretty;
+  }
+  button,
+  input,
+  textarea,
+  select {
+    font: inherit;
+  }
+  input,
+  textarea {
+    caret-color: hsl(var(--primary));
+  }
+  button,
+  a,
+  input,
+  textarea,
+  [role="button"],
+  [tabindex] {
+    -webkit-tap-highlight-color: transparent;
+  }
+  :focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 4px;
+  }
+  ::selection {
+    background: hsl(var(--primary) / 0.18);
+    color: hsl(var(--foreground));
+  }
+  *::-webkit-scrollbar {
+    width: 7px;
+    height: 7px;
+  }
+  *::-webkit-scrollbar-thumb {
+    background: hsl(var(--border));
+    border-radius: 8px;
+  }
+}
+@layer components {
+  .font-editorial {
+    font-family: "Fraunces Variable", Georgia, serif;
+    font-optical-sizing: auto;
+    font-weight: 500;
+  }
+  .page-shell {
+    @apply mx-auto w-full max-w-6xl space-y-8 pb-12;
+  }
+  .page-heading {
+    @apply flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between;
+  }
+  .page-heading h1 {
+    @apply text-3xl font-semibold;
+  }
+  .page-heading p {
+    @apply mt-2 text-sm leading-relaxed text-muted-foreground;
+  }
+  .surface {
+    @apply rounded-2xl border bg-card;
+  }
+  .studio-mark {
+    @apply flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground;
+  }
+  .studio-wordmark {
+    @apply flex items-center gap-2.5 text-xl font-extrabold tracking-tight;
+  }
+  .studio-button {
+    transition:
+      background-color 160ms ease-out,
+      color 160ms ease-out,
+      box-shadow 160ms ease-out,
+      transform 160ms ease-out;
+  }
+  .studio-button:active:not(:disabled):not([aria-disabled="true"]) {
+    transform: scale(0.97);
+  }
+  .studio-button[data-pending="true"] {
+    cursor: wait;
+  }
+  .studio-button-primary {
+    box-shadow: 0 3px 8px -5px hsl(var(--primary) / 0.5);
+  }
+  .project-dot {
+    width: 0.65rem;
+    height: 0.65rem;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: hsl(var(--project-accent));
+  }
+  .project-badge {
+    @apply inline-flex items-center gap-2 rounded-md px-2.5 py-1 text-xs font-semibold;
+    background: hsl(var(--project-soft));
+    color: hsl(var(--project-ink));
+  }
+  .project-cover {
+    background:
+      radial-gradient(
+        ellipse at 93% 20%,
+        hsl(var(--project-accent) / 0.2),
+        transparent 62%
+      ),
+      hsl(var(--card));
+  }
+  .status-badge {
+    @apply inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium;
+  }
+  .status-good {
+    @apply border-primary/20 bg-primary/5 text-primary;
+  }
+  .status-warning {
+    background: hsl(39 79% 93%);
+    color: hsl(32 67% 26%);
+    border-color: hsl(39 60% 73%);
+  }
+  .status-danger {
+    @apply border-destructive/20 bg-destructive/5 text-destructive;
+  }
+  .task-row {
+    @apply flex min-w-0 items-center gap-3 border-b px-5 py-4 last:border-b-0;
+  }
+  .task-row-link {
+    @apply block min-w-0 flex-1 rounded-md;
+  }
+  .workspace-nav-link {
+    @apply flex min-h-11 items-center gap-3 rounded-lg px-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground;
+  }
+  .workspace-nav-link[aria-current="page"] {
+    @apply bg-primary/10 text-primary;
+  }
+  .workspace-shell {
+    display: grid;
+    grid-template-columns: 232px minmax(0, 1fr);
+    min-height: 100dvh;
+  }
+  .workspace-sidebar {
+    @apply sticky top-0 flex h-dvh flex-col border-r bg-card/50;
+  }
+  .workspace-content {
+    padding: 32px clamp(20px, 3.2vw, 52px);
+  }
+  .workspace-topbar {
+    @apply flex min-h-20 items-center justify-between gap-4 border-b px-5;
+    padding-inline: clamp(20px, 3.2vw, 52px);
+  }
+  .milestone-track {
+    @apply flex flex-col gap-6 md:flex-row;
+  }
+  .milestone-node {
+    @apply relative min-w-0 flex-1;
+  }
+  .skip-link {
+    @apply fixed left-4 top-4 z-[100] -translate-y-24 rounded-lg bg-primary px-4 py-3 text-primary-foreground focus:translate-y-0;
+  }
+  .landing-container {
+    @apply mx-auto w-full max-w-[1440px] px-6 md:px-10 lg:px-16;
+  }
+  .landing-hero {
+    @apply grid items-center gap-12 py-16 lg:grid-cols-[1.05fr_1fr] lg:gap-10 lg:py-24;
+  }
+  .landing-title {
+    font-size: clamp(2.9rem, 5.2vw, 5.4rem);
+    line-height: 1.07;
+    letter-spacing: -0.035em;
+  }
+  .landing-demo {
+    @apply relative;
+    isolation: isolate;
+  }
+  .landing-demo::before {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    inset: -10% -6% -12%;
+    background: radial-gradient(
+      ellipse,
+      hsl(var(--sunlight) / 0.7),
+      transparent 68%
+    );
+  }
+  .demo-sheet {
+    @apply relative overflow-hidden rounded-2xl bg-card;
+    box-shadow: 0 20px 55px -25px hsl(38 44% 32% / 0.32);
+  }
+  .hero-photo {
+    @apply absolute -right-3 -top-10 w-3/5 rounded-md;
+    aspect-ratio: 2.4;
+    object-fit: cover;
+    transform: rotate(5deg);
+    box-shadow: 0 5px 18px -8px hsl(30 25% 25% / 0.25);
+  }
+  .demo-annotation {
+    @apply absolute -bottom-8 right-4 text-primary;
+    font-family: "Fraunces Variable", Georgia, serif;
+    font-style: italic;
+    font-size: 1.15rem;
+    transform: rotate(-4deg);
+  }
+  .shine-button {
+    @apply relative overflow-hidden;
+  }
+  .shine-button::after {
+    content: "";
+    position: absolute;
+    inset: -50% auto -50% -50%;
+    width: 28%;
+    transform: rotate(25deg) translateX(-100%);
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgb(255 255 255 / 0.17),
+      transparent
+    );
+    pointer-events: none;
+  }
+  .auth-shell {
+    @apply grid min-h-dvh lg:grid-cols-2;
+  }
+  .auth-story {
+    @apply relative hidden flex-col justify-between overflow-hidden border-r p-12 lg:flex;
+    background:
+      radial-gradient(
+        ellipse at 10% 80%,
+        hsl(var(--sunlight) / 0.4),
+        transparent 65%
+      ),
+      hsl(var(--background));
+  }
+  .auth-form-panel {
+    @apply flex flex-col items-center justify-center px-5 py-12;
+  }
+  .filter-panel {
+    @apply grid gap-3 sm:grid-cols-2 lg:grid-cols-4;
+  }
+  .dark .status-warning {
+    background: hsl(35 25% 19%);
+    color: hsl(43 74% 76%);
+    border-color: hsl(36 32% 36%);
+  }
+}
+@media (hover: hover) and (pointer: fine) {
+  .studio-button-primary:hover {
+    box-shadow: 0 8px 22px -10px hsl(var(--primary) / 0.5);
+    transform: translateY(-1px);
+  }
+  .shine-button:hover::after {
+    animation: sunlight-sweep 650ms ease-out;
+  }
+  .task-row:has(.task-row-link):hover {
+    background: hsl(var(--muted) / 0.5);
+  }
+}
+@media (max-width: 767px) {
+  .workspace-shell {
+    display: block;
+  }
+  .workspace-sidebar {
+    display: none;
+  }
+  .workspace-content {
+    padding: 24px 20px;
+  }
+  .workspace-topbar {
+    min-height: 68px;
+  }
+}
+@keyframes sunlight-sweep {
+  to {
+    left: 140%;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .studio-button:active,
+  .studio-button-primary:hover {
+    transform: none !important;
   }
 }

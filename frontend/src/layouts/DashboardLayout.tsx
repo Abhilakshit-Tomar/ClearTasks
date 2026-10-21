@@ -1,182 +1,283 @@
-import { Outlet, Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, FolderKanban, CheckSquare, Users, Flag, Bell, Settings, Menu, ChevronLeft, LogOut } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { useState, useEffect } from 'react';
-import { useAuth, useUser, UserButton, SignOutButton } from '@clerk/clerk-react';
-import { Navigate } from 'react-router-dom';
-import { setTokenProvider } from '@/services/api';
-import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { useEffect, useLayoutEffect, useState } from "react";
+import { Link, Navigate, Outlet, useLocation } from "react-router-dom";
+import {
+  useAuth,
+  useUser,
+  UserButton,
+  SignOutButton,
+} from "@clerk/clerk-react";
+import {
+  Bell,
+  CheckSquare,
+  ChevronLeft,
+  Flag,
+  FolderKanban,
+  LayoutDashboard,
+  LogOut,
+  Menu,
+  Settings,
+  Users,
+  X,
+} from "lucide-react";
+import * as DialogPrimitive from "@radix-ui/react-dialog";
+import { Button } from "@/components/ui/button";
+import { Brand, PendingLabel } from "@/components/Feedback";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { setTokenProvider } from "@/services/api";
+import { projectStyle } from "@/lib/studio";
 
-const DashboardLayout = () => {
-  const [isSidebarOpen, setSidebarOpen] = useState(false);
+function Navigation({
+  projectId,
+  close,
+}: {
+  projectId: string | null;
+  close: () => void;
+}) {
+  const { pathname } = useLocation();
+  const groups = [
+    ...(projectId
+      ? [
+          {
+            label: "Project workspace",
+            items: [
+              {
+                name: "Overview",
+                path: `/projects/${projectId}`,
+                icon: LayoutDashboard,
+              },
+              {
+                name: "Tasks",
+                path: `/projects/${projectId}/tasks`,
+                icon: CheckSquare,
+              },
+              {
+                name: "Milestones",
+                path: `/projects/${projectId}/milestones`,
+                icon: Flag,
+              },
+              {
+                name: "Team",
+                path: `/projects/${projectId}/team`,
+                icon: Users,
+              },
+            ],
+          },
+        ]
+      : []),
+    {
+      label: projectId ? "Your workspace" : "Workspace",
+      items: [
+        { name: "All projects", path: "/dashboard", icon: FolderKanban },
+        { name: "Notifications", path: "/notifications", icon: Bell },
+        { name: "Settings", path: "/settings", icon: Settings },
+      ],
+    },
+  ];
+  return (
+    <nav aria-label="Workspace navigation" className="space-y-7 px-4">
+      {projectId && (
+        <Link
+          to="/dashboard"
+          onClick={close}
+          className="flex min-h-11 items-center gap-1 rounded-md px-2 text-sm text-muted-foreground hover:text-primary"
+        >
+          <ChevronLeft className="size-4" />
+          Back to projects
+        </Link>
+      )}
+      {groups.map((group) => (
+        <div key={group.label}>
+          <p className="mb-2 flex items-center gap-2 px-3 text-xs font-semibold text-muted-foreground">
+            {projectId && group.label === "Project workspace" && (
+              <span className="project-dot" />
+            )}
+            {group.label}
+          </p>
+          <div className="space-y-1">
+            {group.items.map((item) => {
+              const active =
+                pathname === item.path ||
+                (item.name === "Tasks" && pathname.startsWith(`${item.path}/`));
+              return (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  onClick={close}
+                  aria-current={active ? "page" : undefined}
+                  className="workspace-nav-link"
+                >
+                  <item.icon className="size-[18px]" aria-hidden="true" />
+                  {item.name}
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      ))}
+    </nav>
+  );
+}
+
+function AccountFooter() {
+  const { user } = useUser();
+  return (
+    <div className="mt-auto border-t p-4">
+      <div className="flex min-w-0 items-center gap-3 px-2 py-3">
+        <UserButton afterSignOutUrl="/" />
+        <div className="min-w-0">
+          <p className="truncate text-sm font-semibold">
+            {user?.fullName || user?.firstName || "Your account"}
+          </p>
+          <p className="truncate text-xs text-muted-foreground">
+            {user?.primaryEmailAddress?.emailAddress}
+          </p>
+        </div>
+      </div>
+      <SignOutButton>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="w-full justify-start text-muted-foreground"
+        >
+          <LogOut aria-hidden="true" />
+          Sign out
+        </Button>
+      </SignOutButton>
+    </div>
+  );
+}
+
+export default function DashboardLayout() {
+  const [isOpen, setOpen] = useState(false);
   const location = useLocation();
   const { isLoaded, isSignedIn, getToken } = useAuth();
-  const { user } = useUser();
-
-  useEffect(() => {
+  const match = location.pathname.match(/\/projects\/([a-zA-Z0-9-]+)/);
+  const projectId = match && match[1] !== "new" ? match[1] : null;
+  const section =
+    location.pathname.split("/").filter(Boolean).at(-1) || "Workspace";
+  const title = location.pathname.includes("/tasks/")
+    ? "Task details"
+    : section === "dashboard"
+      ? "Your workspace"
+      : section === "new"
+        ? "Create a project"
+        : section === projectId
+          ? "Project overview"
+          : section.charAt(0).toUpperCase() + section.slice(1);
+  useLayoutEffect(() => {
     setTokenProvider(getToken);
   }, [getToken]);
-
-  // Extract project ID from URL if inside a project
-  const match = location.pathname.match(/\/projects\/([a-zA-Z0-9-]+)/);
-  const projectId = match && match[1] !== 'new' ? match[1] : null;
-
-  // Reset scroll on navigate
   useEffect(() => {
     window.scrollTo(0, 0);
-  }, [location.pathname]);
-
-  if (isLoaded && !isSignedIn) {
-    return <Navigate to="/login" replace />;
-  }
-
-  if (!isLoaded) {
-    return <div className="h-screen w-full flex items-center justify-center">Loading...</div>;
-  }
-
-  const closeSidebar = () => setSidebarOpen(false);
-
-  const navItems = projectId ? [
-    { name: 'Overview', path: `/projects/${projectId}`, icon: LayoutDashboard },
-    { name: 'Tasks', path: `/projects/${projectId}/tasks`, icon: CheckSquare },
-    { name: 'Milestones', path: `/projects/${projectId}/milestones`, icon: Flag },
-    { name: 'Team', path: `/projects/${projectId}/team`, icon: Users },
-  ] : [];
-
-  const globalNavItems = [
-    { name: 'All Projects', path: '/dashboard', icon: FolderKanban },
-    { name: 'Notifications', path: '/notifications', icon: Bell },
-    { name: 'Settings', path: '/settings', icon: Settings },
-  ];
-
-  const NavLinks = () => (
-    <div className="flex flex-col gap-1">
-      {projectId && (
-        <div className="mb-6">
-          <Link to="/dashboard" onClick={closeSidebar} className="flex items-center text-sm text-muted-foreground hover:text-foreground mb-4">
-            <ChevronLeft className="h-4 w-4 mr-1" />
-            Back to Projects
-          </Link>
-          <div className="text-xs font-semibold uppercase text-muted-foreground tracking-wider mb-2 px-3">Project Workspace</div>
-          {navItems.map((item) => {
-            const isActive = location.pathname === item.path || (item.name === 'Tasks' && location.pathname.includes('/tasks'));
-            const Icon = item.icon;
-            return (
-              <Link key={item.path} to={item.path} onClick={closeSidebar}
-                className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors ${isActive ? 'bg-primary/10 text-primary font-medium' : 'text-muted-foreground hover:bg-muted hover:text-foreground'}`}
-              >
-                <Icon className="h-4 w-4" />
-                {item.name}
-              </Link>
-            )
-          })}
-        </div>
-      )}
-
-      <div className="text-xs font-semibold uppercase text-muted-foreground tracking-wider mb-2 px-3">Global</div>
-      {globalNavItems.map((item) => {
-        const isActive = location.pathname.startsWith(item.path);
-        const Icon = item.icon;
-        return (
-          <Link key={item.path} to={item.path} onClick={closeSidebar}
-            className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors ${isActive ? 'bg-primary/10 text-primary font-medium' : 'text-muted-foreground hover:bg-muted hover:text-foreground'}`}
-          >
-            <Icon className="h-4 w-4" />
-            {item.name}
-          </Link>
-        )
-      })}
-    </div>
-  );
-
+    document.title = `${title} · ClearTasks`;
+  }, [location.pathname, title]);
+  if (!isLoaded)
+    return (
+      <div className="flex min-h-dvh items-center justify-center">
+        <PendingLabel>Opening your workspace…</PendingLabel>
+      </div>
+    );
+  if (!isSignedIn) return <Navigate to="/login" replace />;
   return (
-    <div className="flex h-screen overflow-hidden bg-background">
-      {/* Desktop Sidebar */}
-      <aside className="hidden md:flex w-64 flex-col border-r bg-card shadow-sm h-full">
-        <div className="p-6">
-          <Link to="/" className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-              <CheckSquare className="h-5 w-5 text-primary-foreground" />
-            </div>
-            <span className="font-bold text-xl tracking-tight">ClearTasks</span>
-          </Link>
+    <div
+      className="workspace-shell"
+      style={projectStyle(projectId || "cleartasks")}
+    >
+      <a href="#main-content" className="skip-link">
+        Skip to content
+      </a>
+      <aside className="workspace-sidebar">
+        <div className="px-6 py-7">
+          <Brand />
         </div>
-        <nav className="flex-1 px-4 overflow-y-auto">
-          <NavLinks />
-        </nav>
-        <div className="p-4 border-t">
-          <div className="flex items-center gap-3 px-3 py-2">
-            <UserButton afterSignOutUrl="/" />
-            <div className="flex-1 overflow-hidden">
-              <p className="text-sm font-medium truncate">{user?.fullName || user?.firstName || 'User'}</p>
-              <p className="text-xs text-muted-foreground truncate">{user?.primaryEmailAddress?.emailAddress}</p>
-            </div>
-          </div>
-          <div className="mt-2 px-3">
-            <SignOutButton>
-              <Button variant="outline" className="w-full flex items-center justify-center gap-2">
-                <LogOut className="h-4 w-4" />
-                Sign Out
-              </Button>
-            </SignOutButton>
-          </div>
+        <div className="flex-1 overflow-y-auto pb-6">
+          <Navigation projectId={projectId} close={() => setOpen(false)} />
         </div>
+        <AccountFooter />
       </aside>
-
-      {/* Main Content */}
-      <main className="flex-1 flex flex-col h-full overflow-hidden">
-        {/* Mobile Header */}
-        <header className="md:hidden flex items-center justify-between p-4 border-b bg-card">
-          <Link to="/" className="flex items-center gap-2">
-            <div className="h-6 w-6 rounded-md bg-primary flex items-center justify-center">
-              <CheckSquare className="h-4 w-4 text-primary-foreground" />
-            </div>
-            <span className="font-bold text-lg tracking-tight">ClearTasks</span>
-          </Link>
-          <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(!isSidebarOpen)}>
-            <Menu className="h-5 w-5" />
-          </Button>
-        </header>
-
-        {/* Mobile Sidebar Overlay */}
-        {isSidebarOpen && (
-          <div className="fixed inset-0 z-50 flex md:hidden">
-            <div className="fixed inset-0 bg-background/80 backdrop-blur-sm" onClick={closeSidebar} />
-            <div className="fixed inset-y-0 left-0 w-3/4 max-w-sm bg-card border-r shadow-lg flex flex-col">
-              <div className="p-6">
-                <span className="font-bold text-xl tracking-tight">ClearTasks</span>
-              </div>
-              <nav className="flex-1 px-4 overflow-y-auto">
-                <NavLinks />
-              </nav>
-              <div className="p-4 border-t">
-                <div className="flex items-center gap-3 px-3 py-2">
-                  <UserButton afterSignOutUrl="/" />
-                  <div className="flex-1 overflow-hidden">
-                    <p className="text-sm font-medium truncate">{user?.fullName || user?.firstName || 'User'}</p>
-                  </div>
-                </div>
-                <div className="mt-2 px-3">
-                  <SignOutButton>
-                    <Button variant="outline" className="w-full flex items-center justify-center gap-2">
-                      <LogOut className="h-4 w-4" />
-                      Sign Out
-                    </Button>
-                  </SignOutButton>
-                </div>
-              </div>
-            </div>
+      <div className="min-w-0">
+        <header className="workspace-topbar">
+          <div className="hidden items-center gap-2 text-sm md:flex">
+            <Link
+              to="/dashboard"
+              className="rounded-md py-2 text-muted-foreground hover:text-primary"
+            >
+              Workspace
+            </Link>
+            <span className="text-muted-foreground/60">/</span>
+            <span className="font-medium">{title}</span>
           </div>
-        )}
-
-        <div className="flex-1 overflow-y-auto p-4 md:p-8">
-          <ErrorBoundary>
+          <div className="md:hidden">
+            <Brand />
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="hidden text-xs text-muted-foreground md:block">
+              A little more clarity.
+            </span>
+            <Button
+              asChild
+              variant="ghost"
+              size="icon"
+              className="hidden md:inline-flex"
+            >
+              <Link to="/notifications" aria-label="View notifications">
+                <Bell aria-hidden="true" />
+              </Link>
+            </Button>
+            <DialogPrimitive.Root open={isOpen} onOpenChange={setOpen}>
+              <DialogPrimitive.Trigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="md:hidden"
+                  aria-label="Open navigation"
+                  aria-expanded={isOpen}
+                >
+                  <Menu aria-hidden="true" />
+                </Button>
+              </DialogPrimitive.Trigger>
+              <DialogPrimitive.Portal>
+                <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-foreground/35" />
+                <DialogPrimitive.Content className="fixed inset-y-0 left-0 z-50 flex w-[min(85vw,320px)] flex-col bg-background shadow-xl">
+                  <div className="flex items-center justify-between px-6 py-6">
+                    <DialogPrimitive.Title className="text-xl font-bold">
+                      ClearTasks
+                    </DialogPrimitive.Title>
+                    <DialogPrimitive.Close asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        aria-label="Close navigation"
+                      >
+                        <X aria-hidden="true" />
+                      </Button>
+                    </DialogPrimitive.Close>
+                  </div>
+                  <DialogPrimitive.Description className="sr-only">
+                    Choose a project page or open your account settings.
+                  </DialogPrimitive.Description>
+                  <div className="flex-1 overflow-y-auto">
+                    <Navigation
+                      projectId={projectId}
+                      close={() => setOpen(false)}
+                    />
+                  </div>
+                  <AccountFooter />
+                </DialogPrimitive.Content>
+              </DialogPrimitive.Portal>
+            </DialogPrimitive.Root>
+          </div>
+        </header>
+        <main
+          id="main-content"
+          tabIndex={-1}
+          className="workspace-content outline-none"
+        >
+          <ErrorBoundary key={location.pathname}>
             <Outlet />
           </ErrorBoundary>
-        </div>
-      </main>
+        </main>
+      </div>
     </div>
   );
-};
-
-export default DashboardLayout;
+}

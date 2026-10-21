@@ -1,0 +1,138 @@
+{
+  "date": "2026-10-21",
+  "environment": "Real public pages and Clerk entry; authenticated pages use local isolated fixtures",
+  "viewports": [
+    {
+      "page": "landing",
+      "documentWidth": 1440,
+      "width": 1440
+    },
+    {
+      "page": "directory",
+      "documentWidth": 1440,
+      "width": 1440
+    },
+    {
+      "page": "workspace",
+      "documentWidth": 1440,
+      "width": 1440
+    },
+    {
+      "page": "tasks",
+      "documentWidth": 1440,
+      "width": 1440
+    },
+    {
+      "page": "landing",
+      "documentWidth": 768,
+      "width": 768
+    },
+    {
+      "page": "directory",
+      "documentWidth": 768,
+      "width": 768
+    },
+    {
+      "page": "workspace",
+      "documentWidth": 768,
+      "width": 768
+    },
+    {
+      "page": "tasks",
+      "documentWidth": 768,
+      "width": 768
+    },
+    {
+      "page": "landing",
+      "documentWidth": 390,
+      "width": 390
+    },
+    {
+      "page": "directory",
+      "documentWidth": 390,
+      "width": 390
+    },
+    {
+      "page": "workspace",
+      "documentWidth": 390,
+      "width": 390
+    },
+    {
+      "page": "tasks",
+      "documentWidth": 390,
+      "width": 390
+    }
+  ],
+  "interactions": [
+    {
+      "test": "failure stays distinct from empty",
+      "result": {
+        "error": true,
+        "falseEmpty": false
+      }
+    },
+    {
+      "test": "successful empty response",
+      "result": "first-project action shown"
+    },
+    {
+      "test": "planning Back preserves brief",
+      "result": "Student studio plan"
+    },
+    {
+      "test": "planning reload preserves draft",
+      "result": "Student studio plan"
+    },
+    {
+      "test": "team draft survives back/reload",
+      "result": "Alex Morgan"
+    },
+    {
+      "test": "project double-click submission",
+      "result": "one API call; pending label and disabled Back observed"
+    },
+    {
+      "check": "appearance persists across reload",
+      "result": true
+    },
+    {
+      "check": "retry recovers failed project load",
+      "result": true
+    },
+    {
+      "check": "deadline preserved on Back and reload",
+      "result": "2026-12-15"
+    },
+    {
+      "check": "double-click task creation",
+      "result": {
+        "requests": 1,
+        "newTaskVisible": true
+      }
+    },
+    {
+      "check": "invitation opens valid project route",
+      "result": "/projects/campus-garden"
+    },
+    {
+      "check": "real Clerk recovery entry",
+      "result": true
+    },
+    {
+      "check": "landing demonstration responds",
+      "result": true
+    },
+    {
+      "check": "failed status update rolls back",
+      "result": "In progress"
+    },
+    {
+      "check": "cancel generation returns to preserved team draft",
+      "result": "Alex Morgan"
+    },
+    {
+      "check": "slow load shows explicit loading before workspace",
+      "result": true
+    }
+  ]
+}

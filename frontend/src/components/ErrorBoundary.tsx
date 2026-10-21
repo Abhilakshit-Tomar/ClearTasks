@@ -1,4 +1,5 @@
-import React from 'react';
+import React from "react";
+import { Button } from "@/components/ui/button";
 
 export class ErrorBoundary extends React.Component<
   { children: React.ReactNode },
@@ -20,10 +21,18 @@ export class ErrorBoundary extends React.Component<
   render() {
     if (this.state.hasError) {
       return (
-        <div style={{ padding: '2rem', color: 'red' }}>
-          <h2>Something went wrong.</h2>
-          <pre>{this.state.error?.toString()}</pre>
-          <pre>{this.state.error?.stack}</pre>
+        <div
+          role="alert"
+          className="mx-auto max-w-xl space-y-4 rounded-2xl border bg-card p-8 text-center"
+        >
+          <h2 className="text-xl font-semibold">
+            This page needs a fresh start.
+          </h2>
+          <p className="text-sm leading-relaxed text-muted-foreground">
+            Something interrupted the page. Reload to try again; saved project
+            data is kept.
+          </p>
+          <Button onClick={() => window.location.reload()}>Reload page</Button>
         </div>
       );
     }

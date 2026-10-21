@@ -1,157 +1,168 @@
-import { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { milestoneService } from '@/services/api';
-import type { Milestone } from '@/types';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import { Calendar, Flag, Clock, CheckCircle2, Circle } from 'lucide-react';
-import { toast } from 'sonner';
+import { useCallback, useState } from "react";
+import { Link, useParams } from "react-router-dom";
+import { Calendar, Check, CheckCircle2, Circle, Clock } from "lucide-react";
+import { milestoneService } from "@/services/api";
+import { useRemoteData } from "@/hooks/useRemoteData";
+import { formatDate, humanStatus, startOfDay, taskOwner } from "@/lib/studio";
+import { Progress } from "@/components/ui/progress";
+import { EmptyState, ErrorState, LoadingState } from "@/components/Feedback";
 
-const Milestones = () => {
-  const { projectId } = useParams<{ projectId: string }>();
-  const navigate = useNavigate();
-  const [milestones, setMilestones] = useState<Milestone[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  const fetchMilestones = async () => {
-    if (!projectId) return;
-    try {
-      const data = await milestoneService.getMilestones(projectId);
-      setMilestones(data);
-    } catch (error) {
-      toast.error("Failed to load milestones");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchMilestones();
-    const interval = setInterval(fetchMilestones, 5000);
-    return () => clearInterval(interval);
-  }, [projectId]);
-
-  if (loading) return (
-    <div className="space-y-4">
-      <Skeleton className="h-10 w-48" />
-      <div className="space-y-4">
-        {[1, 2, 3].map(i => <Skeleton key={i} className="h-24" />)}
-      </div>
-    </div>
+export default function Milestones() {
+  const [today] = useState(() => new Date());
+  const { projectId = "" } = useParams();
+  const loader = useCallback(
+    () => milestoneService.getMilestones(projectId),
+    [projectId],
   );
-
+  const { data, loading, error, refresh } = useRemoteData(loader, 10000);
+  if (loading) return <LoadingState label="Loading project milestones…" />;
   return (
-    <div className="space-y-6 max-w-4xl mx-auto pb-12">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Milestones</h1>
-        <p className="text-muted-foreground">Track major phases and deadlines for your project.</p>
+    <div className="page-shell max-w-4xl">
+      <div className="page-heading">
+        <div>
+          <h1>The bigger picture.</h1>
+          <p>
+            Small steps become shared milestones. Here’s where you’re headed.
+          </p>
+        </div>
       </div>
-
-      <div className="space-y-4 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-muted before:to-transparent">
-        {(milestones || []).length === 0 ? (
-          <div className="text-center py-10 text-muted-foreground">No milestones defined.</div>
-        ) : (
-          (milestones || []).map((milestone) => {
-            const tasks = milestone.tasks || [];
-            const totalTasks = tasks.length;
-            const completedTasks = tasks.filter(t => t.status === 'DONE').length;
-            const progress = totalTasks === 0 ? 0 : Math.round((completedTasks / totalTasks) * 100);
-            const totalHours = tasks.reduce((sum, t) => sum + (t.estimated_hours || 0), 0);
-            
-            // Dynamic status based on tasks
-            let dynamicStatus = milestone.status;
-            if (totalTasks > 0) {
-              if (completedTasks === totalTasks) dynamicStatus = 'COMPLETED';
-              else if (completedTasks > 0) dynamicStatus = 'IN_PROGRESS';
-              else dynamicStatus = 'PENDING';
-            }
-
-            return (
-              <div key={milestone.id} className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
-                <div className="flex items-center justify-center w-10 h-10 rounded-full border-4 border-background bg-primary/20 text-primary shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2">
-                  <Flag className="h-4 w-4" />
-                </div>
-                <Card className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] hover:shadow-md transition-shadow">
-                  <CardHeader className="pb-2">
-                    <div className="flex justify-between items-start gap-2">
-                      <CardTitle className="text-lg leading-tight">{milestone.title}</CardTitle>
-                      <Badge variant={dynamicStatus === 'COMPLETED' ? 'default' : dynamicStatus === 'IN_PROGRESS' ? 'secondary' : 'outline'}>
-                        {dynamicStatus.replace('_', ' ')}
-                      </Badge>
+      {error && (
+        <ErrorState
+          compact={!!data}
+          message={error}
+          retry={() => void refresh()}
+        />
+      )}
+      {data && (
+        <>
+          {data.length === 0 ? (
+            <EmptyState
+              title="A little room for the bigger picture."
+              description="Milestones from your project plan will appear here with their tasks and deadlines."
+            />
+          ) : (
+            <ol className="space-y-6">
+              {data.map((milestone, index) => {
+                const tasks = milestone.tasks || [];
+                const done = tasks.filter(
+                  (task) => task.status === "DONE",
+                ).length;
+                const percent = tasks.length
+                  ? Math.round((done / tasks.length) * 100)
+                  : milestone.status === "COMPLETED"
+                    ? 100
+                    : 0;
+                const status =
+                  percent === 100
+                    ? "COMPLETED"
+                    : done > 0
+                      ? "IN_PROGRESS"
+                      : milestone.status;
+                const overdue =
+                  status !== "COMPLETED" &&
+                  startOfDay(new Date(milestone.due_date)) < startOfDay(today);
+                return (
+                  <li key={milestone.id} className="flex gap-4 sm:gap-6">
+                    <div className="flex flex-col items-center gap-3">
+                      <span
+                        className={`flex size-9 items-center justify-center rounded-full border text-sm font-semibold ${status === "COMPLETED" ? "border-primary bg-primary text-primary-foreground" : "bg-card"}`}
+                      >
+                        {status === "COMPLETED" ? (
+                          <Check className="size-4" aria-label="Complete" />
+                        ) : (
+                          index + 1
+                        )}
+                      </span>
+                      {index < data.length - 1 && (
+                        <span className="w-px flex-1 bg-border" />
+                      )}
                     </div>
-                    {milestone.description && (
-                      <p className="text-sm text-muted-foreground line-clamp-2 mt-1">{milestone.description}</p>
-                    )}
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="flex flex-wrap items-center gap-4 text-sm font-medium">
-                      <div className="flex items-center text-destructive">
-                        <Calendar className="h-4 w-4 mr-1.5" />
-                        {new Date(milestone.due_date).toLocaleDateString()}
+                    <article className="surface min-w-0 flex-1 p-5 sm:p-6">
+                      <div className="flex flex-wrap items-start justify-between gap-3">
+                        <h2 className="font-editorial break-words text-2xl">
+                          {milestone.title}
+                        </h2>
+                        <span
+                          className={`status-badge ${status === "COMPLETED" ? "status-good" : overdue ? "status-warning" : ""}`}
+                        >
+                          {overdue ? "Past deadline" : humanStatus(status)}
+                        </span>
                       </div>
-                      <div className="flex items-center text-muted-foreground">
-                        <Clock className="h-4 w-4 mr-1.5" />
-                        {totalHours} hrs estimated
+                      {milestone.description && (
+                        <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+                          {milestone.description}
+                        </p>
+                      )}
+                      <div className="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-xs text-muted-foreground">
+                        <span
+                          className={`flex items-center gap-1.5 ${overdue ? "text-destructive" : ""}`}
+                        >
+                          <Calendar className="size-3.5" />
+                          Due {formatDate(milestone.due_date)}
+                        </span>
+                        <span className="flex items-center gap-1.5">
+                          <Clock className="size-3.5" />
+                          {tasks.reduce(
+                            (sum, task) => sum + (task.estimated_hours || 0),
+                            0,
+                          )}{" "}
+                          hours estimated
+                        </span>
                       </div>
-                    </div>
-
-                    {totalTasks > 0 && (
-                      <div className="space-y-3">
-                        <div className="space-y-1.5">
-                          <div className="flex justify-between text-xs font-medium">
-                            <span>{completedTasks} of {totalTasks} tasks complete</span>
-                            <span>{progress}%</span>
-                          </div>
-                          <Progress value={progress} className="h-2" />
+                      <div className="mt-5">
+                        <div className="mb-2 flex justify-between gap-3 text-xs text-muted-foreground">
+                          <span>
+                            {done} of {tasks.length} tasks complete
+                          </span>
+                          <span className="tabular-nums">{percent}%</span>
                         </div>
-                        
-                        <div className="space-y-2 mt-4 pt-4 border-t">
-                          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Tasks</p>
-                          <div className="flex flex-col gap-2">
-                            {tasks.map(task => {
-                              // assignee formatting from backend query which returns json_agg -> assignee_name, profile_name
-                              const assignedTo = (task as any).assignee_name || (task as any).profile_name || 'Unassigned';
-                              const isDone = task.status === 'DONE';
-                              return (
-                                <div 
-                                  key={task.id} 
-                                  onClick={() => navigate(`/projects/${projectId}/tasks/${task.id}`)}
-                                  className="flex items-start gap-2 p-2 -mx-2 rounded-md hover:bg-muted/50 cursor-pointer transition-colors group/task"
-                                >
-                                  {isDone ? (
-                                    <CheckCircle2 className="h-4 w-4 text-primary shrink-0 mt-0.5" />
-                                  ) : (
-                                    <Circle className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5 group-hover/task:text-primary transition-colors" />
-                                  )}
-                                  <div className="flex flex-col flex-1 min-w-0">
-                                    <span className={`text-sm truncate font-medium ${isDone ? 'text-muted-foreground line-through' : ''}`}>
-                                      {task.title}
-                                    </span>
-                                    <span className="text-xs text-muted-foreground truncate">
-                                      Assigned to: {assignedTo}
-                                    </span>
-                                  </div>
-                                  <Badge variant="outline" className="text-[10px] uppercase shrink-0">
-                                    {task.status.replace('_', ' ')}
-                                  </Badge>
+                        <Progress
+                          value={percent}
+                          aria-label={`${milestone.title} progress`}
+                          className="h-1.5"
+                        />
+                      </div>
+                      {tasks.length > 0 && (
+                        <details className="mt-5 border-t pt-4">
+                          <summary className="cursor-pointer rounded-md text-sm font-medium">
+                            See the {tasks.length} tasks
+                          </summary>
+                          <div className="mt-3 divide-y">
+                            {tasks.map((task) => (
+                              <Link
+                                key={task.id}
+                                to={`/projects/${projectId}/tasks/${task.id}`}
+                                className="flex items-start gap-3 rounded-md py-4 hover:text-primary"
+                              >
+                                {task.status === "DONE" ? (
+                                  <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-primary" />
+                                ) : (
+                                  <Circle className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+                                )}
+                                <div className="min-w-0 flex-1">
+                                  <p
+                                    className={`break-words text-sm font-medium ${task.status === "DONE" ? "text-muted-foreground line-through" : ""}`}
+                                  >
+                                    {task.title}
+                                  </p>
+                                  <p className="mt-1 text-xs text-muted-foreground">
+                                    {taskOwner(task)} ·{" "}
+                                    {humanStatus(task.status)}
+                                  </p>
                                 </div>
-                              );
-                            })}
+                              </Link>
+                            ))}
                           </div>
-                        </div>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              </div>
-            );
-          })
-        )}
-      </div>
+                        </details>
+                      )}
+                    </article>
+                  </li>
+                );
+              })}
+            </ol>
+          )}
+        </>
+      )}
     </div>
   );
-};
-
-export default Milestones;
+}

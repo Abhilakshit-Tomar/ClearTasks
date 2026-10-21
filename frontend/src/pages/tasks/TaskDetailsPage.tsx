@@ -1,208 +1,268 @@
-import { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { taskService } from '@/services/api';
-import { Task } from '@/types';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { ChevronLeft, Calendar, Clock, Flag, AlignLeft, Trash, CalendarDays, AlertTriangle } from 'lucide-react';
-import { toast } from 'sonner';
+import { useCallback, useRef, useState } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import { Calendar, ChevronLeft, Clock, Flag, Trash2, User } from "lucide-react";
+import { toast } from "sonner";
+import { taskService } from "@/services/api";
+import type { TaskStatus } from "@/types";
+import { useRemoteData } from "@/hooks/useRemoteData";
+import {
+  errorMessage,
+  formatDate,
+  humanStatus,
+  isOverdue,
+  taskOwner,
+} from "@/lib/studio";
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { EmptyState, ErrorState, LoadingState } from "@/components/Feedback";
 
-const TaskDetailsPage = () => {
-  const { projectId, taskId } = useParams<{ projectId: string, taskId: string }>();
+export default function TaskDetailsPage() {
+  const { projectId = "", taskId = "" } = useParams();
   const navigate = useNavigate();
-  const [task, setTask] = useState<Task | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  const fetchTask = async () => {
-    if (!projectId || !taskId) return;
+  const loader = useCallback(
+    () => taskService.getTasks(projectId),
+    [projectId],
+  );
+  const { data, loading, error, refresh, updateData } = useRemoteData(
+    loader,
+    5000,
+  );
+  const [pendingStatus, setPendingStatus] = useState<TaskStatus | null>(null);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const mutationLock = useRef(false);
+  const task = data?.find((item) => item.id === taskId);
+  async function changeStatus(status: TaskStatus) {
+    if (!task || mutationLock.current) return;
+    mutationLock.current = true;
+    setPendingStatus(status);
     try {
-      const tasks = await taskService.getTasks(projectId);
-      const t = tasks.find(x => x.id === taskId);
-      setTask(t || null);
+      await taskService.updateTaskStatus(task.id, status);
+      updateData((previous) =>
+        previous.map((item) =>
+          item.id === task.id ? { ...item, status } : item,
+        ),
+      );
+      toast.success(
+        status === "DONE"
+          ? "Task completed. Nice work!"
+          : "Task status updated",
+      );
     } catch (error) {
-      toast.error("Failed to load task");
+      toast.error(
+        errorMessage(
+          error,
+          "Status couldn’t be saved. Your previous status has been restored.",
+        ),
+      );
     } finally {
-      setLoading(false);
+      mutationLock.current = false;
+      setPendingStatus(null);
     }
-  };
-
-  useEffect(() => {
-    fetchTask();
-    const interval = setInterval(fetchTask, 5000);
-    return () => clearInterval(interval);
-  }, [projectId, taskId]);
-
-  const handleStatusChange = async (newStatus: string) => {
-    if (!task) return;
-    setTask({ ...task, status: newStatus as any });
-    await taskService.updateTaskStatus(task.id, newStatus as any);
-    toast.success('Task status updated');
-  };
-
-  const handleDelete = async () => {
-    if (!task || !projectId) return;
+  }
+  async function deleteTask() {
+    if (!task || mutationLock.current) return;
+    mutationLock.current = true;
+    setDeleting(true);
     try {
       await taskService.deleteTask(task.id);
-      toast.success('Task deleted');
+      toast.success("Task deleted");
       navigate(`/projects/${projectId}/tasks`);
     } catch (error) {
-      toast.error('Failed to delete task');
+      toast.error(
+        errorMessage(error, "Task couldn’t be deleted. Please try again."),
+      );
+    } finally {
+      mutationLock.current = false;
+      setDeleting(false);
     }
-  };
-
-  if (loading) return <div className="space-y-4 max-w-4xl mx-auto"><Skeleton className="h-10 w-32" /><Skeleton className="h-64" /></div>;
-  if (!task) return <div className="text-center py-20">Task not found</div>;
-
-  const assigneeName = task.assignee?.name || (task as any).planned_profile?.display_name || 'Unassigned';
-
-  const getPriorityInfo = (p: string) => {
-    switch (p) {
-      case 'HIGH': return { color: 'bg-destructive/10 text-destructive', text: 'Important! Blocks other work and should be completed early.' };
-      case 'MEDIUM': return { color: 'bg-amber-500/10 text-amber-600', text: 'Normal project priority.' };
-      case 'LOW': return { color: 'bg-green-500/10 text-green-600', text: 'Can be completed later without blocking major work.' };
-      default: return { color: 'bg-secondary', text: '' };
-    }
-  };
-
-  const priorityInfo = getPriorityInfo(task.priority);
-
+  }
+  if (loading) return <LoadingState label="Loading task details…" />;
+  if (!data)
+    return (
+      <ErrorState
+        message={error || "Task details are unavailable."}
+        retry={() => void refresh()}
+      />
+    );
+  if (!task)
+    return (
+      <EmptyState
+        title="This task isn’t here."
+        description="It may have been deleted, or the link may be out of date."
+      >
+        <Button asChild variant="outline">
+          <Link to={`/projects/${projectId}/tasks`}>Return to tasks</Link>
+        </Button>
+      </EmptyState>
+    );
   return (
-    <div className="max-w-5xl mx-auto space-y-6 pb-12">
-      <div className="flex justify-between items-center">
-        <Button variant="ghost" onClick={() => navigate(`/projects/${projectId}/tasks`)}>
-          <ChevronLeft className="h-4 w-4 mr-2" />
-          Back to Board
+    <div className="page-shell max-w-5xl">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <Button asChild variant="ghost">
+          <Link to={`/projects/${projectId}/tasks`}>
+            <ChevronLeft />
+            Back to tasks
+          </Link>
         </Button>
-        <Button variant="destructive" size="sm" onClick={handleDelete}>
-          <Trash className="h-4 w-4 mr-2" />
-          Delete Task
+        <Button
+          variant="outline"
+          className="text-destructive hover:text-destructive"
+          disabled={pendingStatus !== null}
+          onClick={() => setDeleteOpen(true)}
+        >
+          <Trash2 />
+          Delete task
         </Button>
       </div>
-
-      <div className="flex flex-col md:flex-row gap-6">
-        <div className="flex-1 space-y-6">
-          <div>
-            <div className="flex items-center gap-2 mb-3">
-              {task.phase && <Badge variant="outline">{task.phase}</Badge>}
-              <Badge variant="secondary" className={priorityInfo.color}>
-                {task.priority} PRIORITY
-              </Badge>
-              <Badge variant="outline" className="bg-primary/5 border-primary/20 text-primary">
-                {task.status.replace('_', ' ')}
-              </Badge>
-            </div>
-            
-            <h1 className="text-3xl font-bold tracking-tight mb-6">{task.title}</h1>
-            
-            <div className="flex flex-wrap items-center gap-x-8 gap-y-4 text-sm text-muted-foreground border-b pb-6">
-              <div className="flex items-center gap-2">
-                <Avatar className="h-8 w-8">
-                  <AvatarImage src={task.assignee?.avatar_url} />
-                  <AvatarFallback className="bg-primary/10 text-primary font-medium">
-                    {assigneeName !== 'Unassigned' ? assigneeName[0] : '?'}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex flex-col">
-                  <span className="text-xs uppercase tracking-wider opacity-70">Assignee</span>
-                  <span className="font-medium text-foreground">{assigneeName}</span>
-                </div>
-              </div>
-              
-              <div className="flex items-center gap-2">
-                <Clock className="h-8 w-8 p-1.5 rounded-full bg-muted text-muted-foreground" />
-                <div className="flex flex-col">
-                  <span className="text-xs uppercase tracking-wider opacity-70">Estimated Effort</span>
-                  <span className="font-medium text-foreground">{task.estimated_hours} Hours</span>
-                </div>
-              </div>
-            </div>
+      {error && (
+        <ErrorState compact message={error} retry={() => void refresh()} />
+      )}
+      <div className="grid gap-7 lg:grid-cols-[1.7fr_1fr]">
+        <div>
+          <div className="mb-4 flex flex-wrap gap-2">
+            <span className="project-badge">{task.phase || "General"}</span>
+            <span
+              className={`status-badge ${task.priority === "HIGH" ? "status-danger" : ""}`}
+            >
+              {task.priority[0] + task.priority.slice(1).toLowerCase()} priority
+            </span>
+            {isOverdue(task) && (
+              <span className="status-badge status-danger">Overdue</span>
+            )}
           </div>
-
-          <div>
-            <h3 className="text-lg font-semibold flex items-center gap-2 mb-4">
-              <AlignLeft className="h-5 w-5 text-muted-foreground" />
-              Description
-            </h3>
-            <Card className="shadow-sm">
-              <CardContent className="p-6">
-                <div className="prose dark:prose-invert max-w-none text-sm text-foreground/90 whitespace-pre-wrap">
-                  {task.description || <span className="italic text-muted-foreground">No description provided.</span>}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+          <h1 className="break-words text-3xl font-semibold sm:text-4xl">
+            {task.title}
+          </h1>
+          <p className="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
+            <User className="size-4" />
+            {taskOwner(task)}
+          </p>
+          <section className="mt-8 border-t pt-6">
+            <h2 className="text-lg font-semibold">The work</h2>
+            <p className="mt-4 max-w-prose whitespace-pre-wrap break-words text-sm leading-7 text-muted-foreground">
+              {task.description ||
+                "No description has been added to this task."}
+            </p>
+          </section>
         </div>
-
-        <div className="w-full md:w-80 space-y-6 shrink-0">
-          <Card className="shadow-sm">
-            <CardHeader className="pb-3 border-b">
-              <CardTitle className="text-base font-semibold">Quick Actions</CardTitle>
-            </CardHeader>
-            <CardContent className="pt-4">
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Current Status</label>
-                <Select value={task.status} onValueChange={handleStatusChange}>
-                  <SelectTrigger className="w-full font-medium">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="TODO">To Do</SelectItem>
-                    <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
-                    <SelectItem value="DONE">Done</SelectItem>
-                  </SelectContent>
-                </Select>
+        <aside className="surface self-start p-6">
+          <label htmlFor="task-status" className="text-sm font-semibold">
+            Status
+          </label>
+          <Select
+            value={pendingStatus || task.status}
+            onValueChange={(value) => void changeStatus(value as TaskStatus)}
+            disabled={pendingStatus !== null || deleting}
+          >
+            <SelectTrigger
+              id="task-status"
+              className="mt-3 h-11"
+              aria-busy={pendingStatus !== null}
+            >
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {(["TODO", "IN_PROGRESS", "DONE"] as const).map((status) => (
+                <SelectItem key={status} value={status}>
+                  {humanStatus(status)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <p
+            role="status"
+            className="mt-2 min-h-5 text-xs text-muted-foreground"
+          >
+            {pendingStatus
+              ? "Saving your change…"
+              : "Changes save automatically."}
+          </p>
+          <dl className="mt-5 space-y-5 border-t pt-5">
+            {[
+              {
+                label: "Due date",
+                value: formatDate(task.due_date, {
+                  month: "long",
+                  day: "numeric",
+                  year: "numeric",
+                }),
+                icon: Calendar,
+              },
+              {
+                label: "Estimated effort",
+                value:
+                  task.estimated_hours === undefined
+                    ? "Not estimated"
+                    : `${task.estimated_hours} hours`,
+                icon: Clock,
+              },
+              {
+                label: "Milestone",
+                value: task.milestone?.title || "No milestone",
+                icon: Flag,
+              },
+            ].map((item) => (
+              <div key={item.label}>
+                <dt className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <item.icon className="size-4" />
+                  {item.label}
+                </dt>
+                <dd className="mt-2 break-words text-sm font-medium">
+                  {item.value}
+                </dd>
               </div>
-            </CardContent>
-          </Card>
-
-          <Card className="shadow-sm">
-            <CardHeader className="pb-3 border-b">
-              <CardTitle className="text-base font-semibold">Properties</CardTitle>
-            </CardHeader>
-            <CardContent className="pt-4 space-y-5">
-              
-              <div className="flex items-start gap-3">
-                <Flag className="h-4 w-4 mt-0.5 text-muted-foreground" />
-                <div className="text-sm">
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1">Milestone</p>
-                  <p className="font-medium leading-snug">{task.milestone?.title || 'None'}</p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <Calendar className="h-4 w-4 mt-0.5 text-muted-foreground" />
-                <div className="text-sm">
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1">Due Date</p>
-                  <p className="font-medium leading-snug">{task.due_date ? new Date(task.due_date).toLocaleDateString(undefined, { weekday: 'short', year: 'numeric', month: 'long', day: 'numeric' }) : 'None'}</p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <CalendarDays className="h-4 w-4 mt-0.5 text-muted-foreground" />
-                <div className="text-sm">
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1">Start Date (Created)</p>
-                  <p className="font-medium leading-snug">{new Date(task.created_at).toLocaleDateString(undefined, { weekday: 'short', year: 'numeric', month: 'long', day: 'numeric' })}</p>
-                </div>
-              </div>
-              
-              <div className="flex items-start gap-3 pt-2 border-t">
-                <AlertTriangle className={`h-4 w-4 mt-0.5 ${task.priority === 'HIGH' ? 'text-destructive' : task.priority === 'MEDIUM' ? 'text-amber-500' : 'text-green-500'}`} />
-                <div className="text-sm">
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1">Priority Meaning</p>
-                  <p className="leading-snug text-muted-foreground">{priorityInfo.text}</p>
-                </div>
-              </div>
-              
-            </CardContent>
-          </Card>
-        </div>
+            ))}
+          </dl>
+        </aside>
       </div>
+      <Dialog
+        open={deleteOpen}
+        onOpenChange={(open) => {
+          if (!deleting) setDeleteOpen(open);
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete this task?</DialogTitle>
+            <DialogDescription>
+              “{task.title}” will be permanently deleted. This action cannot be
+              undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              disabled={deleting}
+              onClick={() => setDeleteOpen(false)}
+            >
+              Keep task
+            </Button>
+            <Button
+              variant="destructive"
+              pending={deleting}
+              pendingLabel="Deleting…"
+              onClick={() => void deleteTask()}
+            >
+              Delete task
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
-};
-
-export default TaskDetailsPage;
+}

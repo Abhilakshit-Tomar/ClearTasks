@@ -1,8 +1,8 @@
-export type Role = 'OWNER' | 'MEMBER';
-export type ProjectStatus = 'ACTIVE' | 'COMPLETED' | 'ARCHIVED';
-export type TaskStatus = 'TODO' | 'IN_PROGRESS' | 'DONE';
-export type TaskPriority = 'LOW' | 'MEDIUM' | 'HIGH';
-export type MilestoneStatus = 'PENDING' | 'IN_PROGRESS' | 'COMPLETED';
+export type Role = "OWNER" | "MEMBER";
+export type ProjectStatus = "ACTIVE" | "COMPLETED" | "ARCHIVED";
+export type TaskStatus = "TODO" | "IN_PROGRESS" | "DONE";
+export type TaskPriority = "LOW" | "MEDIUM" | "HIGH";
+export type MilestoneStatus = "PENDING" | "IN_PROGRESS" | "COMPLETED";
 
 export interface User {
   id: string;
@@ -37,7 +37,7 @@ export interface ProjectMember {
   skills?: string;
   preferred_technologies?: string;
   joined_at: string;
-  
+
   // Joined relation fields for the UI
   user?: User;
 }
@@ -72,6 +72,9 @@ export interface Task {
   // Joined relations for the UI
   assignee?: User;
   milestone?: Milestone;
+  planned_profile?: { display_name: string };
+  assignee_name?: string;
+  profile_name?: string;
 }
 
 export interface TeamProfile {
@@ -97,7 +100,7 @@ export interface ProjectInvitation {
   expires_at: string;
   accepted_at?: string;
   created_at: string;
-  
+
   // Extended fields for UI
   project_name?: string;
   display_name?: string;
@@ -110,7 +113,12 @@ export interface Notification {
   user_id: string;
   project_id?: string;
   task_id?: string;
-  type: 'TASK_ASSIGNED' | 'TASK_DUE_SOON' | 'TASK_OVERDUE' | 'PROJECT_INVITATION' | 'MILESTONE_COMPLETED';
+  type:
+    | "TASK_ASSIGNED"
+    | "TASK_DUE_SOON"
+    | "TASK_OVERDUE"
+    | "PROJECT_INVITATION"
+    | "MILESTONE_COMPLETED";
   title: string;
   message: string;
   is_read: boolean;
@@ -139,6 +147,11 @@ export interface AIProjectPlan {
       relativeDueDay: number;
     }[];
   }[];
-  milestones: { id: string; title: string; description: string; relativeDay: number }[];
+  milestones: {
+    id: string;
+    title: string;
+    description: string;
+    relativeDay: number;
+  }[];
   assignments: { taskTitle: string; memberPlaceholder: string }[];
 }

@@ -1,11 +1,30 @@
-import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Plus, FolderKanban, Calendar, Users, MoreVertical, Trash2, FolderOpen } from 'lucide-react';
-import { projectService } from '@/services/api';
-import { Project } from '@/types';
+import { useMemo, useState } from "react";
+import { Link } from "react-router-dom";
+import {
+  ArrowRight,
+  Calendar,
+  FolderOpen,
+  MoreHorizontal,
+  Plus,
+  Search,
+  Trash2,
+  Users,
+} from "lucide-react";
+import { toast } from "sonner";
+import { projectService, taskService, milestoneService } from "@/services/api";
+import type { Project } from "@/types";
+import { useRemoteData } from "@/hooks/useRemoteData";
+import {
+  errorMessage,
+  formatDate,
+  humanStatus,
+  projectStyle,
+  summarizeProject,
+  taskOwner,
+} from "@/lib/studio";
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+import { Input } from "@/components/ui/input";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,162 +39,305 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { toast } from 'sonner';
+import { EmptyState, ErrorState, LoadingState } from "@/components/Feedback";
 
-const AllProjects = () => {
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [loading, setLoading] = useState(true);
+type ProjectEntry = {
+  project: Project;
+  summary: ReturnType<typeof summarizeProject> | null;
+};
 
-  useEffect(() => {
-    const fetchProjects = async () => {
-      try {
-        const data = await projectService.getProjects();
-        setProjects(data);
-      } catch (error) {
-        console.error("Failed to load projects", error);
-      } finally {
-        setLoading(false);
+async function loadProjects(): Promise<ProjectEntry[]> {
+  const projects = await projectService.getProjects();
+  const entries: ProjectEntry[] = new Array(projects.length);
+  let next = 0;
+  await Promise.all(
+    Array.from({ length: Math.min(4, projects.length) }, async () => {
+      while (next < projects.length) {
+        const index = next++;
+        const project = projects[index];
+        const result = await Promise.allSettled([
+          taskService.getTasks(project.id),
+          milestoneService.getMilestones(project.id),
+        ]);
+        entries[index] = {
+          project,
+          summary:
+            result[0].status === "fulfilled" && result[1].status === "fulfilled"
+              ? summarizeProject(project, result[0].value, result[1].value)
+              : null,
+        };
       }
-    };
-    fetchProjects();
-  }, []);
+    }),
+  );
+  return entries;
+}
 
-  const [deleteDialogProject, setDeleteDialogProject] = useState<Project | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
-
-  const handleDeleteProject = async () => {
-    if (!deleteDialogProject) return;
-    
-    setIsDeleting(true);
+export default function AllProjects() {
+  const { data, loading, error, refresh, updateData } =
+    useRemoteData(loadProjects);
+  const [query, setQuery] = useState("");
+  const [deleting, setDeleting] = useState(false);
+  const [selected, setSelected] = useState<Project | null>(null);
+  const filtered = useMemo(
+    () =>
+      (data || []).filter(({ project }) =>
+        `${project.name} ${project.description} ${project.project_type || ""}`
+          .toLowerCase()
+          .includes(query.trim().toLowerCase()),
+      ),
+    [data, query],
+  );
+  async function deleteProject() {
+    if (!selected || deleting) return;
+    setDeleting(true);
     try {
-      await projectService.deleteProject(deleteDialogProject.id);
-      setProjects(projects.filter(p => p.id !== deleteDialogProject.id));
-      toast.success('Project deleted successfully');
-      setDeleteDialogProject(null);
-    } catch (error: any) {
-      toast.error(`Failed to delete project: ${error.message || 'Unknown error'}`);
+      await projectService.deleteProject(selected.id);
+      updateData((entries) =>
+        entries.filter((entry) => entry.project.id !== selected.id),
+      );
+      setSelected(null);
+      toast.success("Project deleted");
+    } catch (error) {
+      toast.error(
+        errorMessage(error, "Project couldn’t be deleted. Please try again."),
+      );
     } finally {
-      setIsDeleting(false);
+      setDeleting(false);
     }
-  };
-
+  }
+  if (loading)
+    return <LoadingState label="Loading your projects and their next steps…" />;
   return (
-    <div className="space-y-6 max-w-6xl mx-auto">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+    <div className="page-shell">
+      <div className="page-heading">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Projects</h1>
-          <p className="text-muted-foreground text-sm mt-1">Manage your team projects and track progress.</p>
+          <h1 className="!font-editorial !text-4xl">
+            A little progress, together.
+          </h1>
+          <p>Your projects, your people, and the next thing to move forward.</p>
         </div>
         <Button asChild>
           <Link to="/projects/new">
-            <Plus className="h-4 w-4 mr-2" />
-            New Project
+            <Plus aria-hidden="true" />
+            New project
           </Link>
         </Button>
       </div>
-
-      {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[1, 2, 3].map(i => (
-            <Card key={i} className="flex flex-col">
-              <CardHeader>
-                <Skeleton className="h-6 w-3/4 mb-2" />
-                <Skeleton className="h-4 w-1/2" />
-              </CardHeader>
-              <CardContent className="flex-1">
-                <Skeleton className="h-4 w-full mb-2" />
-                <Skeleton className="h-4 w-full mb-2" />
-                <Skeleton className="h-4 w-2/3" />
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      ) : projects.length === 0 ? (
-        <div className="text-center py-20 border-2 border-dashed rounded-lg bg-muted/20">
-          <FolderKanban className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-          <h3 className="text-xl font-semibold mb-2">No projects yet</h3>
-          <p className="text-muted-foreground mb-6">Create your first project to get started.</p>
+      {error && (
+        <ErrorState
+          compact={!!data}
+          message={error}
+          retry={() => void refresh()}
+        />
+      )}
+      {data?.some((entry) => !entry.summary) && (
+        <ErrorState
+          compact
+          message="Some project details aren’t available. Your projects are still here; retry to load their latest progress."
+          retry={() => void refresh()}
+        />
+      )}
+      {data?.length === 0 ? (
+        <EmptyState
+          title="Your next good idea starts here."
+          description="Tell us what you’re building, bring your team, and turn the big idea into a shared plan."
+        >
           <Button asChild>
             <Link to="/projects/new">
-              <Plus className="h-4 w-4 mr-2" />
-              Create Project
+              Create your first project
+              <ArrowRight />
             </Link>
           </Button>
-        </div>
+        </EmptyState>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {projects.map((project) => (
-            <Card key={project.id} className="flex flex-col hover:shadow-md transition-shadow cursor-pointer" onClick={() => window.location.href = `/projects/${project.id}`}>
-              <CardHeader>
-                <div className="flex justify-between items-start">
-                  <div>
-                    <CardTitle className="text-lg line-clamp-1 mb-1">{project.name}</CardTitle>
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">
-                      {project.status}
-                    </span>
+        data && (
+          <>
+            <div className="flex flex-wrap items-center justify-between gap-4 border-b pb-5">
+              <h2 className="text-lg font-semibold">
+                Your projects{" "}
+                <span className="ml-1 text-sm font-normal text-muted-foreground">
+                  {data.length}
+                </span>
+              </h2>
+              <div className="relative w-full sm:w-64">
+                <Search
+                  className="absolute left-3 top-3.5 size-4 text-muted-foreground"
+                  aria-hidden="true"
+                />
+                <Input
+                  aria-label="Search projects"
+                  placeholder="Find a project…"
+                  className="h-11 pl-10"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                />
+              </div>
+            </div>
+            <div className="space-y-5">
+              {filtered.map(({ project, summary }) => (
+                <article
+                  key={project.id}
+                  style={projectStyle(project.id)}
+                  className="surface overflow-hidden"
+                >
+                  <div className="project-cover grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3 px-5 py-5 sm:px-7">
+                    <div className="min-w-0">
+                      <span className="project-badge">
+                        <span className="project-dot" />
+                        {project.project_type || "Team project"}
+                      </span>
+                      <h3 className="mt-3 break-words text-xl font-semibold">
+                        <Link
+                          to={`/projects/${project.id}`}
+                          className="rounded-md hover:text-primary"
+                        >
+                          {project.name}
+                        </Link>
+                      </h3>
+                      <p className="mt-2 line-clamp-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
+                        {project.description}
+                      </p>
+                    </div>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          aria-label={`Actions for ${project.name}`}
+                        >
+                          <MoreHorizontal aria-hidden="true" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem asChild>
+                          <Link to={`/projects/${project.id}`}>
+                            <FolderOpen className="mr-2 size-4" />
+                            Open project
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          className="text-destructive focus:text-destructive"
+                          onSelect={() => setSelected(project)}
+                        >
+                          <Trash2 className="mr-2 size-4" />
+                          Delete project
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground -mt-1 -mr-2" onClick={(e) => e.stopPropagation()}>
-                        <MoreVertical className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-                      <DropdownMenuItem onClick={() => window.location.href = `/projects/${project.id}`}>
-                        <FolderOpen className="mr-2 h-4 w-4" />
-                        Open Project
-                      </DropdownMenuItem>
-                      <DropdownMenuItem 
-                        className="text-destructive focus:text-destructive"
-                        onClick={() => setDeleteDialogProject(project)}
-                      >
-                        <Trash2 className="mr-2 h-4 w-4" />
-                        Delete Project
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-                <CardDescription className="line-clamp-1">{project.project_type || 'General'}</CardDescription>
-              </CardHeader>
-              <CardContent className="flex-1">
-                <p className="text-sm text-muted-foreground line-clamp-2">{project.description}</p>
-                <div className="flex gap-4 mt-4 text-sm text-muted-foreground">
-                  <div className="flex items-center">
-                    <Calendar className="h-4 w-4 mr-1" />
-                    {new Date(project.deadline).toLocaleDateString()}
+                  <div className="grid gap-6 px-5 py-5 sm:px-7 lg:grid-cols-[1.1fr_1fr_auto] lg:items-center">
+                    <div>
+                      <div className="mb-3 flex flex-wrap items-center justify-between gap-2 text-xs">
+                        <span
+                          className={`status-badge ${summary?.overdue.length || summary?.health === "Past deadline" ? "status-warning" : "status-good"}`}
+                        >
+                          {summary?.health || "Progress unavailable"}
+                        </span>
+                        <span className="tabular-nums text-muted-foreground">
+                          {summary
+                            ? `${summary.completed} of ${summary.total} tasks complete`
+                            : humanStatus(project.status)}
+                        </span>
+                      </div>
+                      {summary && (
+                        <Progress
+                          value={summary.percent}
+                          aria-label={`${project.name} progress`}
+                          className="h-1.5"
+                        />
+                      )}
+                      <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2 text-xs text-muted-foreground">
+                        <span className="flex items-center gap-1.5">
+                          <Calendar className="size-3.5" />
+                          Due {formatDate(project.deadline)}
+                        </span>
+                        <span className="flex items-center gap-1.5">
+                          <Users className="size-3.5" />
+                          {project.team_size} members
+                        </span>
+                      </div>
+                    </div>
+                    <div className="min-w-0 lg:border-l lg:pl-6">
+                      <p className="text-xs font-medium text-muted-foreground">
+                        {summary?.upcoming[0] ? "Next move" : "Next milestone"}
+                      </p>
+                      <p className="mt-2 truncate text-sm font-semibold">
+                        {summary?.upcoming[0]?.title ||
+                          summary?.nextMilestone?.title ||
+                          (summary
+                            ? "Open the workspace to plan what’s next."
+                            : "Retry to see the latest next step.")}
+                      </p>
+                      {summary?.upcoming[0] && (
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          {taskOwner(summary.upcoming[0])} ·{" "}
+                          {formatDate(summary.upcoming[0].due_date)}
+                        </p>
+                      )}
+                    </div>
+                    <Button variant="outline" asChild>
+                      <Link to={`/projects/${project.id}`}>
+                        Open project
+                        <ArrowRight aria-hidden="true" />
+                      </Link>
+                    </Button>
                   </div>
-                  <div className="flex items-center">
-                    <Users className="h-4 w-4 mr-1" />
-                    {project.team_size} members
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+                </article>
+              ))}
+            </div>
+            {filtered.length === 0 && (
+              <EmptyState
+                title="No matching projects"
+                description="Try a different name or clear your search."
+              >
+                <Button variant="outline" onClick={() => setQuery("")}>
+                  Clear search
+                </Button>
+              </EmptyState>
+            )}
+          </>
+        )
       )}
-
-      <Dialog open={!!deleteDialogProject} onOpenChange={(open) => !open && !isDeleting && setDeleteDialogProject(null)}>
-        <DialogContent>
+      <Dialog
+        open={!!selected}
+        onOpenChange={(open) => {
+          if (!open && !deleting) setSelected(null);
+        }}
+      >
+        <DialogContent
+          onEscapeKeyDown={(event) => {
+            if (deleting) event.preventDefault();
+          }}
+          onInteractOutside={(event) => {
+            if (deleting) event.preventDefault();
+          }}
+        >
           <DialogHeader>
-            <DialogTitle>Delete Project?</DialogTitle>
+            <DialogTitle>Delete {selected?.name}?</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete "{deleteDialogProject?.name}"?
-              This will permanently delete the project, its tasks, milestones, members and related notifications.
+              This permanently deletes the project, tasks, milestones, members,
+              and related notifications. This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteDialogProject(null)} disabled={isDeleting}>
-              Cancel
+            <Button
+              variant="outline"
+              disabled={deleting}
+              onClick={() => setSelected(null)}
+            >
+              Keep project
             </Button>
-            <Button variant="destructive" onClick={handleDeleteProject} disabled={isDeleting}>
-              {isDeleting ? 'Deleting...' : 'Delete Project'}
+            <Button
+              variant="destructive"
+              pending={deleting}
+              pendingLabel="Deleting…"
+              onClick={() => void deleteProject()}
+            >
+              Delete project
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
   );
-};
-
-export default AllProjects;
+}

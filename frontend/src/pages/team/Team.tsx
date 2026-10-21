@@ -1,183 +1,243 @@
-import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { teamService } from '@/services/api';
-import { ProjectMember } from '@/types';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Card, CardContent } from '@/components/ui/card';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { UserPlus, Mail, Check } from 'lucide-react';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { toast } from 'sonner';
-import { TeamProfile } from '@/types';
-import { invitationService } from '@/services/api';
+import { useCallback, useRef, useState } from "react";
+import { useParams } from "react-router-dom";
+import { Check, Mail, UserPlus, Users } from "lucide-react";
+import { toast } from "sonner";
+import { teamService, invitationService } from "@/services/api";
+import type { TeamProfile } from "@/types";
+import { useRemoteData } from "@/hooks/useRemoteData";
+import { errorMessage, projectStyle } from "@/lib/studio";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { EmptyState, ErrorState, LoadingState } from "@/components/Feedback";
 
-const Team = () => {
-  const { projectId } = useParams<{ projectId: string }>();
-  const [members, setMembers] = useState<ProjectMember[]>([]);
-  const [profiles, setProfiles] = useState<TeamProfile[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  // Invite state
-  const [inviteEmail, setInviteEmail] = useState('');
-  const [invitingProfile, setInvitingProfile] = useState<TeamProfile | null>(null);
-
-
-  const fetchTeam = async () => {
-    if (!projectId) return;
-    try {
-      const [membersData, profilesData] = await Promise.all([
-        teamService.getTeam(projectId),
-        teamService.getTeamProfiles(projectId)
-      ]);
-      setMembers(membersData);
-      setProfiles(profilesData);
-    } catch (error) {
-      toast.error("Failed to load team members");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchTeam();
-    // Setup polling for cross-member updates (every 5 seconds)
-    const interval = setInterval(fetchTeam, 5000);
-    return () => clearInterval(interval);
+export default function Team() {
+  const { projectId = "" } = useParams();
+  const loader = useCallback(async () => {
+    const [members, profiles] = await Promise.all([
+      teamService.getTeam(projectId),
+      teamService.getTeamProfiles(projectId),
+    ]);
+    return { members, profiles };
   }, [projectId]);
-
-  if (loading) return (
-    <div className="space-y-4">
-      <Skeleton className="h-10 w-48" />
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {[1, 2, 3].map(i => <Skeleton key={i} className="h-32" />)}
-      </div>
-    </div>
+  const { data, loading, error, refresh, updateData } = useRemoteData(
+    loader,
+    10000,
   );
-
+  const [inviting, setInviting] = useState<TeamProfile | null>(null);
+  const [email, setEmail] = useState("");
+  const [sending, setSending] = useState(false);
+  const sendingLock = useRef(false);
+  async function invite(event: React.FormEvent) {
+    event.preventDefault();
+    if (!inviting || sendingLock.current) return;
+    sendingLock.current = true;
+    setSending(true);
+    try {
+      await invitationService.createInvitation({
+        projectId,
+        teamProfileId: inviting.id,
+        email: email.trim(),
+      });
+      updateData((previous) => ({
+        ...previous,
+        profiles: previous.profiles.map((profile) =>
+          profile.id === inviting.id
+            ? { ...profile, has_pending_invitation: true }
+            : profile,
+        ),
+      }));
+      toast.success(`Invitation sent to ${email.trim()}`);
+      setInviting(null);
+      setEmail("");
+    } catch (error) {
+      toast.error(
+        errorMessage(
+          error,
+          "The invitation couldn’t be sent. Check the address and try again.",
+        ),
+      );
+    } finally {
+      sendingLock.current = false;
+      setSending(false);
+    }
+  }
+  if (loading)
+    return <LoadingState label="Loading the people on your project…" />;
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+    <div className="page-shell">
+      <div className="page-heading">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Team</h1>
-          <p className="text-muted-foreground">Manage your project members and their roles.</p>
+          <h1>The people behind the project.</h1>
+          <p>Different strengths. One shared goal.</p>
         </div>
+        <Users
+          className="hidden size-7 text-primary/60 sm:block"
+          aria-hidden="true"
+        />
       </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-        {members.map(member => (
-          <Card key={member.id} className="border-primary/20 bg-primary/5">
-            <CardContent className="p-6 flex flex-col sm:flex-row items-center sm:items-start gap-4">
-              <Avatar className="h-16 w-16">
-                <AvatarImage src={member.user?.avatar_url} />
-                <AvatarFallback className="text-xl">{member.user?.name?.[0]}</AvatarFallback>
-              </Avatar>
-              <div className="flex-1 text-center sm:text-left space-y-1">
-                <div className="flex items-center justify-center sm:justify-start gap-2">
-                  <h3 className="font-semibold text-lg">{member.user?.name}</h3>
-                  <Badge variant="outline" className="bg-background">Connected</Badge>
-                </div>
-                <p className="text-sm text-muted-foreground flex items-center justify-center sm:justify-start gap-1">
-                  <Mail className="h-3 w-3" />
-                  {member.user?.email}
-                </p>
-                <div className="flex flex-wrap justify-center sm:justify-start gap-2 pt-2">
-                  <Badge variant={member.role === 'OWNER' ? 'default' : 'secondary'}>
-                    {member.role}
-                  </Badge>
+      {error && (
+        <ErrorState
+          compact={!!data}
+          message={error}
+          retry={() => void refresh()}
+        />
+      )}
+      {data && (
+        <>
+          {data.members.length === 0 && data.profiles.length === 0 ? (
+            <EmptyState
+              title="Your team has room to grow."
+              description="Team profiles appear here when they’re included in your project plan."
+            />
+          ) : (
+            <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+              {data.members.map((member) => (
+                <article
+                  key={member.id}
+                  className="surface p-6"
+                  style={projectStyle(member.user_id)}
+                >
+                  <Avatar className="size-12">
+                    <AvatarImage src={member.user?.avatar_url} />
+                    <AvatarFallback className="bg-primary/10 font-semibold text-primary">
+                      {member.user?.name?.[0] || "?"}
+                    </AvatarFallback>
+                  </Avatar>
+                  <h2 className="mt-4 break-words text-lg font-semibold">
+                    {member.user?.name || "Team member"}
+                  </h2>
+                  <p className="mt-1 flex items-center gap-1.5 break-all text-xs text-muted-foreground">
+                    <Mail className="size-3.5 shrink-0" />
+                    {member.user?.email || "Email not available"}
+                  </p>
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    <span className="status-badge status-good">
+                      <Check className="size-3" />
+                      Connected
+                    </span>
+                    <span className="project-badge">
+                      {member.role === "OWNER"
+                        ? "Project owner"
+                        : "Team member"}
+                    </span>
+                  </div>
                   {member.skills && (
-                    <span className="text-xs text-muted-foreground mt-0.5">
-                      Skills: {member.skills}
-                    </span>
+                    <p className="mt-5 border-t pt-4 text-sm leading-relaxed text-muted-foreground">
+                      {member.skills}
+                    </p>
                   )}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-
-        {profiles.filter(p => !p.linked_user_id).map(profile => (
-          <Card key={profile.id} className="border-dashed border-2">
-            <CardContent className="p-6 flex flex-col items-center sm:items-start gap-4">
-              <div className="flex-1 text-center sm:text-left space-y-1 w-full">
-                <div className="flex items-center justify-between w-full">
-                  <h3 className="font-semibold text-lg text-muted-foreground">{profile.display_name}</h3>
-                  <Badge variant="outline" className="text-muted-foreground">
-                    {profile.has_pending_invitation ? 'Pending invitation' : 'Not connected'}
-                  </Badge>
-                </div>
-                {profile.preferred_work && (
-                  <p className="text-sm text-muted-foreground">Role: {profile.preferred_work}</p>
-                )}
-                <div className="flex flex-wrap justify-center sm:justify-start gap-2 pt-2 pb-4">
-                  {profile.skills && (
-                    <span className="text-xs text-muted-foreground mt-0.5">
-                      Skills: {profile.skills}
-                    </span>
-                  )}
-                </div>
-                <div className="w-full">
-                  {profile.has_pending_invitation ? (
-                    <Button variant="secondary" className="w-full" disabled>
-                      <Check className="h-4 w-4 mr-2" />
-                      Invitation sent
-                    </Button>
-                  ) : (
-                    <Dialog onOpenChange={(open) => { if(!open) { setInviteEmail(''); } }}>
-                      <DialogTrigger asChild>
-                        <Button variant="outline" className="w-full" onClick={() => setInvitingProfile(profile)}>
-                          <UserPlus className="h-4 w-4 mr-2" />
-                          Invite Member
+                </article>
+              ))}
+              {data.profiles
+                .filter((profile) => !profile.linked_user_id)
+                .map((profile) => (
+                  <article
+                    key={profile.id}
+                    className="surface flex flex-col border-dashed p-6"
+                    style={projectStyle(profile.id)}
+                  >
+                    <Avatar className="size-12">
+                      <AvatarFallback
+                        className="font-semibold"
+                        style={{
+                          background: "hsl(var(--project-soft))",
+                          color: "hsl(var(--project-ink))",
+                        }}
+                      >
+                        {profile.display_name[0]}
+                      </AvatarFallback>
+                    </Avatar>
+                    <h2 className="mt-4 break-words text-lg font-semibold">
+                      {profile.display_name}
+                    </h2>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {profile.preferred_work || "Planned team member"}
+                    </p>
+                    <p className="mt-4 flex-1 text-sm leading-relaxed text-muted-foreground">
+                      {profile.skills ||
+                        profile.description ||
+                        "Ready to bring their strengths to the project."}
+                    </p>
+                    <div className="mt-5 border-t pt-4">
+                      {profile.has_pending_invitation ? (
+                        <p className="flex min-h-11 items-center gap-2 text-sm text-primary">
+                          <Check className="size-4" />
+                          Invitation sent
+                        </p>
+                      ) : (
+                        <Button
+                          variant="outline"
+                          className="w-full"
+                          onClick={() => {
+                            setEmail("");
+                            setInviting(profile);
+                          }}
+                        >
+                          <UserPlus />
+                          Invite {profile.display_name}
                         </Button>
-                      </DialogTrigger>
-                      <DialogContent>
-                        <DialogHeader>
-                          <DialogTitle>Invite {invitingProfile?.display_name}</DialogTitle>
-                          <DialogDescription>Send an email invitation to join this project.</DialogDescription>
-                        </DialogHeader>
-                        <div className="space-y-4 py-4">
-                          <div className="space-y-2">
-                            <Label htmlFor="email">Email address</Label>
-                            <Input 
-                              id="email" 
-                              type="email" 
-                              placeholder="student@example.com" 
-                              value={inviteEmail}
-                              onChange={(e) => setInviteEmail(e.target.value)}
-                            />
-                          </div>
-                        </div>
-                        <div className="flex justify-end">
-                          <Button onClick={async () => {
-                            if (!inviteEmail || !projectId || !invitingProfile) return;
-                            try {
-                              await invitationService.createInvitation({
-                                projectId,
-                                teamProfileId: invitingProfile.id,
-                                email: inviteEmail
-                              });
-                              toast.success('Invitation sent via email!');
-                              // Trigger a refetch immediately
-                              fetchTeam();
-                            } catch (e: any) {
-                              toast.error(e.message || "Failed to create invite");
-                            }
-                          }}>Send Invitation</Button>
-                        </div>
-                      </DialogContent>
-                    </Dialog>
-                  )}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+                      )}
+                    </div>
+                  </article>
+                ))}
+            </div>
+          )}
+        </>
+      )}
+      <Dialog
+        open={!!inviting}
+        onOpenChange={(open) => {
+          if (!open && !sending) setInviting(null);
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              Bring {inviting?.display_name} into the project.
+            </DialogTitle>
+            <DialogDescription>
+              Send an invitation to connect their account to this planned team
+              profile.
+            </DialogDescription>
+          </DialogHeader>
+          <form className="space-y-5" onSubmit={(event) => void invite(event)}>
+            <div className="space-y-2">
+              <Label htmlFor="invite-email">Email address</Label>
+              <Input
+                type="email"
+                id="invite-email"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                required
+                disabled={sending}
+                placeholder="teammate@example.com"
+              />
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                disabled={sending}
+                onClick={() => setInviting(null)}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" pending={sending} pendingLabel="Sending…">
+                Send invitation
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
-};
-
-export default Team;
+}
