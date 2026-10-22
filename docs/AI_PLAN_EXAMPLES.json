@@ -1,0 +1,339 @@
+{
+  "illustrative": true,
+  "generatedAt": "2026-10-21T06:29:41.232Z",
+  "examples": [
+    {
+      "brief": {
+        "projectTitle": "Study-room booking prototype",
+        "description": "Build a small React and Express prototype for a university study-room booking system. Students can see available rooms, book a time slot, and cancel their own bookings. Prevent overlapping reservations. Deliver a local demonstration and a short setup guide; no payments or production deployment are required.",
+        "teamSize": 2,
+        "deadline": "2026-11-04",
+        "teamProfiles": [
+          {
+            "displayName": "Alex Morgan",
+            "skills": "Express, SQL",
+            "experienceLevel": "Intermediate",
+            "preferredWork": "Backend and data modeling"
+          },
+          {
+            "displayName": "Riya Kapoor",
+            "skills": "React, CSS",
+            "experienceLevel": "Beginner",
+            "preferredWork": "Interface and browser testing"
+          }
+        ]
+      },
+      "plan": {
+        "projectType": "software",
+        "difficulty": "medium",
+        "estimatedTasks": 6,
+        "timelineDays": 14,
+        "modules": [
+          {
+            "name": "Backend API",
+            "description": "Express server with local state data management for study room slots."
+          },
+          {
+            "name": "Frontend Interface",
+            "description": "React UI for viewing available rooms and managing user bookings."
+          }
+        ],
+        "phases": [
+          {
+            "name": "Architecture and Setup",
+            "order": 1,
+            "tasks": [
+              {
+                "title": "Define room and booking data schema",
+                "description": "Deliverable: JSON structure representing rooms and bookings. Steps: Define schema to support room ID, time slots, and unique user identifiers. Ensure schema handles null booking statuses. Done when: Schema successfully represents 3 rooms with 5 slots each and validates against overlapping logic constraints.",
+                "priority": "HIGH",
+                "estimatedHours": 2,
+                "dependsOn": [],
+                "assignedToProfile": "Alex Morgan",
+                "milestoneId": "M1",
+                "relativeStartDay": 0,
+                "relativeDueDay": 1
+              },
+              {
+                "title": "Initialize Express API endpoints",
+                "description": "Deliverable: REST API endpoints for GET/POST/DELETE. Steps: Implement GET /rooms, POST /bookings with conflict check, and DELETE /bookings/:id. Assume local memory storage for simplicity. Done when: Postman or cURL proves that posting a duplicate time slot returns a 409 conflict error.",
+                "priority": "HIGH",
+                "estimatedHours": 4,
+                "dependsOn": [
+                  "Define room and booking data schema"
+                ],
+                "assignedToProfile": "Alex Morgan",
+                "milestoneId": "M1",
+                "relativeStartDay": 2,
+                "relativeDueDay": 4
+              },
+              {
+                "title": "Create booking management dashboard",
+                "description": "Deliverable: React UI components for room listing. Steps: Build component for displaying time slots and status. Implement 'Book' button trigger. Done when: User can toggle view between available rooms and see current selections.",
+                "priority": "MEDIUM",
+                "estimatedHours": 6,
+                "dependsOn": [],
+                "assignedToProfile": "Riya Kapoor",
+                "milestoneId": "M1",
+                "relativeStartDay": 0,
+                "relativeDueDay": 4
+              }
+            ]
+          },
+          {
+            "name": "Integration and Delivery",
+            "order": 2,
+            "tasks": [
+              {
+                "title": "Connect UI to backend API",
+                "description": "Deliverable: Functioning end-to-end booking flow. Steps: Link frontend buttons to POST/DELETE requests. Ensure UI updates immediately after successful bookings. Done when: Clicking 'Book' updates the backend and refreshes the room availability display.",
+                "priority": "HIGH",
+                "estimatedHours": 6,
+                "dependsOn": [
+                  "Initialize Express API endpoints",
+                  "Create booking management dashboard"
+                ],
+                "assignedToProfile": "Riya Kapoor",
+                "milestoneId": "M2",
+                "relativeStartDay": 5,
+                "relativeDueDay": 8
+              },
+              {
+                "title": "Verify cancellation logic",
+                "description": "Deliverable: Evidence of restricted deletion. Steps: Ensure only the creator can cancel their booking. Attempt to cancel someone else's booking. Done when: Unauthorized cancel request returns 403 Forbidden and valid requests remove the record.",
+                "priority": "MEDIUM",
+                "estimatedHours": 4,
+                "dependsOn": [
+                  "Connect UI to backend API"
+                ],
+                "assignedToProfile": "Alex Morgan",
+                "milestoneId": "M2",
+                "relativeStartDay": 9,
+                "relativeDueDay": 10
+              },
+              {
+                "title": "Write local setup guide",
+                "description": "Deliverable: README.md file. Steps: Document node dependencies, setup command (e.g., npm install), and steps to launch server and client. Done when: A teammate confirms they can run the project locally following only these instructions.",
+                "priority": "MEDIUM",
+                "estimatedHours": 2,
+                "dependsOn": [
+                  "Verify cancellation logic"
+                ],
+                "assignedToProfile": "Riya Kapoor",
+                "milestoneId": "M2",
+                "relativeStartDay": 11,
+                "relativeDueDay": 12
+              }
+            ]
+          }
+        ],
+        "milestones": [
+          {
+            "id": "M1",
+            "title": "Foundation Complete",
+            "description": "API endpoints and basic dashboard UI are operational.",
+            "relativeDay": 4
+          },
+          {
+            "id": "M2",
+            "title": "Prototype Delivery",
+            "description": "System functional, tested, and documented.",
+            "relativeDay": 12
+          }
+        ],
+        "assignments": [
+          {
+            "taskTitle": "Define room and booking data schema",
+            "memberPlaceholder": "Alex Morgan"
+          },
+          {
+            "taskTitle": "Initialize Express API endpoints",
+            "memberPlaceholder": "Alex Morgan"
+          },
+          {
+            "taskTitle": "Create booking management dashboard",
+            "memberPlaceholder": "Riya Kapoor"
+          },
+          {
+            "taskTitle": "Connect UI to backend API",
+            "memberPlaceholder": "Riya Kapoor"
+          },
+          {
+            "taskTitle": "Verify cancellation logic",
+            "memberPlaceholder": "Alex Morgan"
+          },
+          {
+            "taskTitle": "Write local setup guide",
+            "memberPlaceholder": "Riya Kapoor"
+          }
+        ]
+      }
+    },
+    {
+      "brief": {
+        "projectTitle": "Shaded courtyard planting proposal",
+        "description": "Prepare a native-plant proposal for a shaded university courtyard. Deliver a comparison of suitable native plants, an annotated planting layout that keeps access paths clear, and a short presentation for the campus facilities team. This is a proposal only: no purchasing, planting, website, or software is required.",
+        "teamSize": 2,
+        "deadline": "2026-11-04",
+        "teamProfiles": [
+          {
+            "displayName": "Alex Morgan",
+            "skills": "Plant research, writing",
+            "preferredWork": "Site research"
+          },
+          {
+            "displayName": "Riya Kapoor",
+            "skills": "Drawing, presentation design",
+            "preferredWork": "Layout and visual explanation"
+          }
+        ]
+      },
+      "plan": {
+        "projectType": "Landscape Design Research and Proposal",
+        "difficulty": "Moderate",
+        "estimatedTasks": 6,
+        "timelineDays": 14,
+        "modules": [
+          {
+            "name": "Research and Analysis",
+            "description": "Gathering horticultural data for shaded courtyard environments."
+          },
+          {
+            "name": "Design and Visualization",
+            "description": "Creating the visual layout and presentation materials."
+          }
+        ],
+        "phases": [
+          {
+            "name": "Research and Selection",
+            "order": 1,
+            "tasks": [
+              {
+                "title": "Define site conditions and constraints",
+                "description": "Deliverable: A summary document of shade levels (e.g., partial vs. deep), existing path dimensions, and soil assessment. Steps: Measure path widths; observe light patterns at mid-day; check university planting guidelines. Done when: Site constraints document is shared with Riya; path clearance requirements are explicitly defined.",
+                "priority": "HIGH",
+                "estimatedHours": 4,
+                "dependsOn": [],
+                "assignedToProfile": "Alex Morgan",
+                "milestoneId": "M1",
+                "relativeStartDay": 0,
+                "relativeDueDay": 2
+              },
+              {
+                "title": "Select native plants for shade",
+                "description": "Deliverable: A comparison table of at least 5 native plant species suitable for shade. Steps: Research native species; confirm tolerance for shaded courtyard conditions; compare maintenance needs and height. Done when: Table is complete with justified recommendations for the university setting.",
+                "priority": "HIGH",
+                "estimatedHours": 6,
+                "dependsOn": [
+                  "Define site conditions and constraints"
+                ],
+                "assignedToProfile": "Alex Morgan",
+                "milestoneId": "M1",
+                "relativeStartDay": 3,
+                "relativeDueDay": 6
+              }
+            ]
+          },
+          {
+            "name": "Proposal Development",
+            "order": 2,
+            "tasks": [
+              {
+                "title": "Draft annotated planting layout",
+                "description": "Deliverable: A visual map showing where selected plants will go. Steps: Overlay plant footprints onto the courtyard map; verify paths remain at least 1.5m wide (assuming standard accessibility requirement); annotate layout for maintenance access. Done when: Layout clearly distinguishes between plant zones and clear transit paths.",
+                "priority": "HIGH",
+                "estimatedHours": 6,
+                "dependsOn": [
+                  "Select native plants for shade"
+                ],
+                "assignedToProfile": "Riya Kapoor",
+                "milestoneId": "M2",
+                "relativeStartDay": 7,
+                "relativeDueDay": 10
+              },
+              {
+                "title": "Design facilities presentation",
+                "description": "Deliverable: A 5-slide deck for the campus facilities team. Steps: Incorporate layout visual; summarize plant benefits; list maintenance needs; design clear, readable text. Done when: Presentation is reviewed for clarity on accessibility and ease of maintenance.",
+                "priority": "MEDIUM",
+                "estimatedHours": 4,
+                "dependsOn": [
+                  "Draft annotated planting layout"
+                ],
+                "assignedToProfile": "Riya Kapoor",
+                "milestoneId": "M2",
+                "relativeStartDay": 11,
+                "relativeDueDay": 12
+              },
+              {
+                "title": "Peer review and final assembly",
+                "description": "Deliverable: A polished, unified proposal document. Steps: Combine research and layout; check against university requirements; perform final edit for readability. Done when: Final proposal document is ready for handover to the university team.",
+                "priority": "HIGH",
+                "estimatedHours": 2,
+                "dependsOn": [
+                  "Design facilities presentation"
+                ],
+                "assignedToProfile": "Alex Morgan",
+                "milestoneId": "M2",
+                "relativeStartDay": 13,
+                "relativeDueDay": 13
+              },
+              {
+                "title": "Final project handover",
+                "description": "Deliverable: Handover email and file storage. Steps: Organize final files; confirm file formats are accessible to the facilities team; send confirmation. Done when: Team confirms delivery receipt or successful upload to department portal.",
+                "priority": "MEDIUM",
+                "estimatedHours": 1,
+                "dependsOn": [
+                  "Peer review and final assembly"
+                ],
+                "assignedToProfile": "Alex Morgan",
+                "milestoneId": "M2",
+                "relativeStartDay": 14,
+                "relativeDueDay": 14
+              }
+            ]
+          }
+        ],
+        "milestones": [
+          {
+            "id": "M1",
+            "title": "Plant Selection Finalized",
+            "description": "Validated list of shade-tolerant native species ready for design integration.",
+            "relativeDay": 6
+          },
+          {
+            "id": "M2",
+            "title": "Proposal Ready for Delivery",
+            "description": "Final planting layout and presentation deck prepared for university facilities team.",
+            "relativeDay": 14
+          }
+        ],
+        "assignments": [
+          {
+            "taskTitle": "Define site conditions and constraints",
+            "memberPlaceholder": "Alex Morgan"
+          },
+          {
+            "taskTitle": "Select native plants for shade",
+            "memberPlaceholder": "Alex Morgan"
+          },
+          {
+            "taskTitle": "Draft annotated planting layout",
+            "memberPlaceholder": "Riya Kapoor"
+          },
+          {
+            "taskTitle": "Design facilities presentation",
+            "memberPlaceholder": "Riya Kapoor"
+          },
+          {
+            "taskTitle": "Peer review and final assembly",
+            "memberPlaceholder": "Alex Morgan"
+          },
+          {
+            "taskTitle": "Final project handover",
+            "memberPlaceholder": "Alex Morgan"
+          }
+        ]
+      }
+    }
+  ]
+}

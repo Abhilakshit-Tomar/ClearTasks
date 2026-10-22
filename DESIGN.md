@@ -311,6 +311,8 @@ State transitions last 160ms with ease-out. Press scales an enabled control to 0
 
 [Card](frontend/src/components/ui/card.tsx) uses the card pair, a regular border, 2xl corners, and no default shadow. Its header has 24px padding; content/footer retain that inset with the top removed. [Surface](frontend/src/index.css) is the same quiet border-based container pattern for app sections. Cards organize real work rather than producing a fixed metric-tile grid.
 
+Team cards retain the linked project profile's name, skills, and preferred work after account connection. [Team identity](frontend/src/lib/team.ts) also accepts the REST endpoint's flat name/avatar fields and older nested user fields. Member cards show no email row, and an email stored as an account-name fallback is never displayed as the member's name. Missing names use a person icon and an explicit unavailable label.
+
 ### Inputs / Fields
 
 [Input](frontend/src/components/ui/input.tsx) is 40px high by default, uses the input stroke and background ground, and has 12px horizontal and 8px vertical padding. Text is 16px below 768px and 14px from that breakpoint; forms and search can explicitly choose 44px height. Labels stay visible, placeholders use secondary ink, and the caret follows primary. Focus uses the shared ring and offset; disabled fields dim and use a not-allowed cursor. Error messages remain adjacent and readable, with alerts where implemented.

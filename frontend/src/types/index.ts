@@ -38,6 +38,10 @@ export interface ProjectMember {
   preferred_technologies?: string;
   joined_at: string;
 
+  // The members REST endpoint returns these joined fields at the top level.
+  name?: string;
+  avatar_url?: string;
+
   // Joined relation fields for the UI
   user?: User;
 }

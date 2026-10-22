@@ -1,11 +1,12 @@
 import { useCallback, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
-import { Check, Mail, UserPlus, Users } from "lucide-react";
+import { Check, UserPlus, UserRound, Users } from "lucide-react";
 import { toast } from "sonner";
 import { teamService, invitationService } from "@/services/api";
 import type { TeamProfile } from "@/types";
 import { useRemoteData } from "@/hooks/useRemoteData";
 import { errorMessage, projectStyle } from "@/lib/studio";
+import { teamMemberIdentity } from "@/lib/team";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -36,6 +37,8 @@ export default function Team() {
   const [email, setEmail] = useState("");
   const [sending, setSending] = useState(false);
   const sendingLock = useRef(false);
+  const inviteTrigger = useRef<HTMLButtonElement | null>(null);
+  const heading = useRef<HTMLHeadingElement | null>(null);
   async function invite(event: React.FormEvent) {
     event.preventDefault();
     if (!inviting || sendingLock.current) return;
@@ -76,7 +79,9 @@ export default function Team() {
     <div className="page-shell">
       <div className="page-heading">
         <div>
-          <h1>The people behind the project.</h1>
+          <h1 ref={heading} tabIndex={-1}>
+            The people behind the project.
+          </h1>
           <p>Different strengths. One shared goal.</p>
         </div>
         <Users
@@ -100,43 +105,49 @@ export default function Team() {
             />
           ) : (
             <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-              {data.members.map((member) => (
-                <article
-                  key={member.id}
-                  className="surface p-6"
-                  style={projectStyle(member.user_id)}
-                >
-                  <Avatar className="size-12">
-                    <AvatarImage src={member.user?.avatar_url} />
-                    <AvatarFallback className="bg-primary/10 font-semibold text-primary">
-                      {member.user?.name?.[0] || "?"}
-                    </AvatarFallback>
-                  </Avatar>
-                  <h2 className="mt-4 break-words text-lg font-semibold">
-                    {member.user?.name || "Team member"}
-                  </h2>
-                  <p className="mt-1 flex items-center gap-1.5 break-all text-xs text-muted-foreground">
-                    <Mail className="size-3.5 shrink-0" />
-                    {member.user?.email || "Email not available"}
-                  </p>
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    <span className="status-badge status-good">
-                      <Check className="size-3" />
-                      Connected
-                    </span>
-                    <span className="project-badge">
-                      {member.role === "OWNER"
-                        ? "Project owner"
-                        : "Team member"}
-                    </span>
-                  </div>
-                  {member.skills && (
-                    <p className="mt-5 border-t pt-4 text-sm leading-relaxed text-muted-foreground">
-                      {member.skills}
-                    </p>
-                  )}
-                </article>
-              ))}
+              {data.members.map((member) => {
+                const identity = teamMemberIdentity(member, data.profiles);
+                return (
+                  <article
+                    key={member.id}
+                    className="surface p-6"
+                    style={projectStyle(member.user_id)}
+                  >
+                    <Avatar className="size-12">
+                      <AvatarImage src={identity.avatarUrl} alt="" />
+                      <AvatarFallback className="bg-primary/10 font-semibold text-primary">
+                        {identity.initials || (
+                          <UserRound className="size-5" aria-hidden="true" />
+                        )}
+                      </AvatarFallback>
+                    </Avatar>
+                    <h2 className="mt-4 break-words text-lg font-semibold">
+                      {identity.name}
+                    </h2>
+                    {identity.preferredWork && (
+                      <p className="mt-1 break-words text-sm text-muted-foreground">
+                        {identity.preferredWork}
+                      </p>
+                    )}
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      <span className="status-badge status-good">
+                        <Check className="size-3" />
+                        Connected
+                      </span>
+                      <span className="project-badge">
+                        {member.role === "OWNER"
+                          ? "Project owner"
+                          : "Team member"}
+                      </span>
+                    </div>
+                    {(identity.skills || identity.description) && (
+                      <p className="mt-5 border-t pt-4 text-sm leading-relaxed text-muted-foreground">
+                        {identity.skills || identity.description}
+                      </p>
+                    )}
+                  </article>
+                );
+              })}
               {data.profiles
                 .filter((profile) => !profile.linked_user_id)
                 .map((profile) => (
@@ -177,7 +188,8 @@ export default function Team() {
                         <Button
                           variant="outline"
                           className="w-full"
-                          onClick={() => {
+                          onClick={(event) => {
+                            inviteTrigger.current = event.currentTarget;
                             setEmail("");
                             setInviting(profile);
                           }}
@@ -199,7 +211,14 @@ export default function Team() {
           if (!open && !sending) setInviting(null);
         }}
       >
-        <DialogContent>
+        <DialogContent
+          onCloseAutoFocus={(event) => {
+            event.preventDefault();
+            if (inviteTrigger.current?.isConnected)
+              inviteTrigger.current.focus();
+            else heading.current?.focus();
+          }}
+        >
           <DialogHeader>
             <DialogTitle>
               Bring {inviting?.display_name} into the project.

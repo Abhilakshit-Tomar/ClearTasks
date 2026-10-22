@@ -1,0 +1,47 @@
+{
+  "date": "2026-10-21",
+  "fixture": "team-connected",
+  "viewports": [
+    {
+      "cardsContainEmail": false,
+      "documentWidth": 1440,
+      "names": [
+        "Alex Morgan",
+        "Riya Kapoor",
+        "Jamie Shah",
+        "Noor Patel"
+      ],
+      "width": 1440
+    },
+    {
+      "cardsContainEmail": false,
+      "documentWidth": 768,
+      "names": [
+        "Alex Morgan",
+        "Riya Kapoor",
+        "Jamie Shah",
+        "Noor Patel"
+      ],
+      "width": 768
+    },
+    {
+      "cardsContainEmail": false,
+      "documentWidth": 380,
+      "names": [
+        "Alex Morgan",
+        "Riya Kapoor",
+        "Jamie Shah",
+        "Noor Patel"
+      ],
+      "width": 390
+    }
+  ],
+  "invitationDialog": {
+    "opens": true,
+    "focusAfterCancel": {
+      "tag": "BUTTON",
+      "text": "Invite Noor Patel"
+    }
+  },
+  "note": "Example data; member cards exclude email rows and reject email-as-name fallbacks."
+}

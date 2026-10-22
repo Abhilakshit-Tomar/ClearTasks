@@ -158,6 +158,7 @@ export async function fixtureMiddleware(
   const caseId = url.searchParams.get("case") || headerCase;
   const state = cases.get(caseId) || seed();
   cases.set(caseId, state);
+  if (mode === "team-connected") state.profiles[1].linked_user_id = "student2";
   const path = url.pathname.replace("/api", "");
   response.setHeader("Content-Type", "application/json");
   const send = (data: unknown) => {
@@ -294,8 +295,19 @@ export async function fixtureMiddleware(
         user_id: "student1",
         role: "OWNER",
         skills: "Research, writing",
-        user: { name: "Alex Morgan", email: "alex@example.test" },
+        name: "Alex Morgan",
       },
+      ...(mode === "team-connected"
+        ? [
+            {
+              id: "member2",
+              user_id: "student2",
+              role: "MEMBER",
+              name: "riya@example.test",
+              email: "riya@example.test",
+            },
+          ]
+        : []),
     ]);
     return;
   }
