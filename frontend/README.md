@@ -1,32 +1,45 @@
-# React + TypeScript + Vite
+# ClearTasks frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+The frontend provides guided planning and the shared project workspace. For the project purpose, developer contributions and system-wide setup, see the [main README](../README.md).
 
-Currently, two official plugins are available:
+## User interactions
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- Enter the project brief, deadline and team profiles through a staged form.
+- Review a suggested plan, request refinements and confirm creation.
+- Open project overviews, inspect tasks and change task statuses.
+- Create tasks, search and filter the board, and switch between board and list views.
+- Inspect milestones, workload, planned members and invitation states.
+- Use the responsive task-card layout on narrow screens.
 
-## React Compiler
+Gemini generation and refinement are requested through the backend. Progress calculations, overdue detection, sorting, draft storage, filters and status controls run as application logic.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Implementation map
 
-## Expanding the Oxlint configuration
+| Area | Main files |
+|---|---|
+| Routing and entry | [App.tsx](src/App.tsx), [main.tsx](src/main.tsx) |
+| Planning state machine, draft retention and confirmation | [CreateProjectFlow.tsx](src/pages/projects/create/CreateProjectFlow.tsx) |
+| Task interaction | [TaskBoard.tsx](src/pages/tasks/TaskBoard.tsx), [TaskDetailsPage.tsx](src/pages/tasks/TaskDetailsPage.tsx) |
+| Calculated project state | [studio.ts](src/lib/studio.ts), [ProjectDashboard.tsx](src/pages/projects/ProjectDashboard.tsx) |
+| Member display and profile identity | [team.ts](src/lib/team.ts), [Team.tsx](src/pages/team/Team.tsx) |
+| API and refresh handling | [api.ts](src/services/api.ts), [useRemoteData.ts](src/hooks/useRemoteData.ts) |
+| Feedback and controls | [Feedback.tsx](src/components/Feedback.tsx), [UI components](src/components/ui) |
 
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
+## Development
 
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+From this directory:
+
+```sh
+npm ci
+npm run dev
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+Set `VITE_CLERK_PUBLISHABLE_KEY` and `VITE_API_BASE_URL` in `frontend/.env.local`. For local development, the API URL is normally `http://localhost:5000/api`. Start Express separately as described in the main README.
+
+```sh
+npm test
+npm run lint
+npm run build
+```
+
+The 17 frontend regression tests exercise API handling, project-state calculations and member identity. For an isolated demonstration, run `npm run preview:fixtures`; see [preview scenarios](tests/README.md) for details.

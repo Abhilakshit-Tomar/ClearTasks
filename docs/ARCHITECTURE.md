@@ -1,6 +1,6 @@
 # ClearTasks Architecture & Code-Flow Audit
 
-This document provides a complete architecture and code-flow audit of the **ClearTasks** project, based strictly on the current implementation.
+These architecture and code-flow notes include earlier interface walkthroughs. The [current implementation map](../README.md#application-engineering-and-automation) links to the active workflow components and application logic; [planning integration](AI_IMPLEMENTATION.md) describes the current generation, validation and fallback path.
 
 ---
 

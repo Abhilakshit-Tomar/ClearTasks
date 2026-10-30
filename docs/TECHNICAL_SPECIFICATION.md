@@ -1,5 +1,7 @@
 # ClearTasks Technical Specification
 
+**Document status:** Original design specification retained for project history. Some provider names and proposed behaviours below predate the current implementation. See the [main README](../README.md) for implemented features and [planning integration](AI_IMPLEMENTATION.md) for the current Gemini workflow, validation and fallback behaviour.
+
 ## 1. Product Overview
 ClearTasks is a lightweight, AI-powered task distribution and project management application tailored primarily for student group projects. 
 The core objective is to answer: *"Who is doing what, and are we on track?"*

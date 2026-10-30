@@ -1,77 +1,64 @@
-# AI Implementation
+# Planning integration and application validation
 
-## AI Architecture
-The ClearTasks application integrates with OpenAI's API to dynamically generate structured project plans based on basic project information.
-We use the **OpenAI Node.js SDK** directly in the Express backend, keeping the architecture simple and avoiding unnecessary middleware frameworks like LangChain.
+ClearTasks uses Google Gemini through `@google/genai` to propose and refine project plans. The integration sits inside a user-controlled workflow: collect a brief, generate a draft, validate it, present it for review, and create records after confirmation.
 
-## Endpoints
-1. `POST /api/ai/analyze`
-2. `POST /api/ai/improve-plan`
+## Runtime responsibilities
 
-## Input Schema
-The backend accepts inputs validated via **Zod**:
-- `projectTitle` (string)
-- `description` (string)
-- `teamSize` (number)
-- `deadline` (ISO string date)
-For the `improve-plan` endpoint, it also accepts:
-- `originalPlan` (the previous AIProjectPlan object)
-- `improvements` (optional fields like `assignByStrengths`, `teamSkills`, etc.)
+| Responsibility | Implementation |
+|---|---|
+| Collect the goal, deadline, team names and preferences | User input in [CreateProjectFlow.tsx](../frontend/src/pages/projects/create/CreateProjectFlow.tsx) and its form steps. |
+| Propose task descriptions, allocation and a schedule | Gemini generation through [ai.ts](../server/src/routes/ai.ts). |
+| Construct the planning contract and check the candidate | Application code in [planning.ts](../server/src/ai/planning.ts) and [schema.ts](../server/src/ai/schema.ts). |
+| Decide whether to refine or confirm | The coordinator's review actions. |
+| Create the project, profiles, tasks and milestones | A separate request handled by [projects.ts](../server/src/routes/projects.ts). |
+| Track current work and calculate progress | Task APIs and frontend [summary helpers](../frontend/src/lib/studio.ts). |
 
-## Output Schema
-We utilize the `zodResponseFormat` feature of OpenAI SDK to guarantee that the response adheres to a strict JSON schema:
-```json
-{
-  "projectType": "Web Application",
-  "difficulty": "Medium",
-  "estimatedTasks": 20,
-  "timelineWeeks": 4,
-  "modules": [ { "name": "Auth", "description": "User login" } ],
-  "phases": [
-    {
-      "name": "Planning",
-      "order": 1,
-      "tasks": [
-        {
-          "title": "Define requirements",
-          "description": "...",
-          "priority": "HIGH",
-          "estimatedHours": 4,
-          "dependsOn": []
-        }
-      ]
-    }
-  ],
-  "milestones": [ { "title": "Planning Complete", "description": "...", "relativeDay": 5 } ],
-  "assignments": [ { "taskTitle": "Define requirements", "memberPlaceholder": "Member 1" } ]
-}
-```
+Gemini is called by the two planning endpoints. Workspace reads, status updates, progress calculations and invitations use their own application logic and stored records.
 
-## Prompt Strategy
-The AI is prompted to act as an expert technical project manager for student projects. It is explicitly told to create reasonable tasks, avoid enterprise bloat, and balance workloads according to the given team size and constraints.
-When improving the plan, the AI is instructed to preserve existing context while making precise changes requested by the user.
+## Planning endpoints
 
-## Validation
-Incoming requests are validated using `zod` schemas (`aiAnalyzeSchema`, `aiImproveSchema`) within `validators.ts`.
+- `POST /api/ai/analyze` accepts the title, description, team size, deadline and planned team profiles.
+- `POST /api/ai/improve-plan` also accepts the existing plan and the coordinator's refinement requirements.
 
-## Fallback Behavior
-If the OpenAI API key is missing or an error occurs during the API call, a deterministic `generateFallbackPlan` function is triggered to ensure the frontend still receives a valid plan to display, without breaking the UI flow. A `fallback: true` flag is included in the payload.
+[Request validators](../server/src/utils/validators.ts) check the input shape. `buildPlanningRequest` adds available planning days, exact assignee names and planning rules. The backend requests structured JSON using the response schema.
 
-## Assignment Logic
-Tasks are assigned to placeholders (`Member 1`, `Member 2`, etc.) based on the requested team size. If `teamSkills` are provided during the improvement phase, the AI will align assignments with specific member strengths.
+The candidate includes `projectType`, `difficulty`, `estimatedTasks`, `timelineDays`, `modules`, `phases`, `milestones` and `assignments`. Each task includes its description, priority, estimated hours, prerequisites, planned owner, milestone and relative start/due days.
 
-## Security Considerations
-- The OpenAI API key (`OPENAI_API_KEY`) is kept exclusively in the server environment. It is **never** exposed to the frontend or sent over the network.
-- Zod is used to safely parse input limits, preventing excessively large strings from reaching the LLM and avoiding potential DOS through long queries.
-- Database writes are **not** performed by the AI endpoints. The endpoints purely return JSON to the frontend for user review.
+## Application-owned quality checks
 
-## Environment Variables
-- `OPENAI_API_KEY`: Required.
-- `OPENAI_MODEL`: Optional (defaults to `gpt-4o-mini`).
+`validateProjectPlan` runs TypeScript checks against the candidate:
 
-## Testing Procedure
-1. Verify frontend can hit `POST /api/ai/analyze` and successfully receive a mocked fallback plan if `OPENAI_API_KEY` is not set.
-2. Provide a valid `OPENAI_API_KEY` in `server/.env.local` and restart the backend.
-3. Validate that creating a new project with title/desc appropriately leverages OpenAI and returns dynamic content.
-4. Go through the Improve Plan flow, provide an improvement prompt, and confirm the AI adjusts the plan intelligently without losing the fundamental structure.
-5. Review the plan and confirm creation. Verify the database stores the tasks and milestones accurately.
+- Required fields, task counts, unique titles and milestone IDs.
+- Concrete task outcomes and descriptions containing a deliverable, steps and completion criteria.
+- Exact matches to supplied team names and consistent assignment entries.
+- Existing prerequisite and milestone references, dependency cycles and prerequisite timing.
+- Task and milestone dates within the planning horizon and deadline.
+- Estimated effort within task windows and assumed member capacity.
+- Conflicting allocations that exceed capacity within scheduled dates.
+
+The capacity rule currently assumes two focused hours per person per day. These calculations check the model's candidate using application code. See [planning.ts](../server/src/ai/planning.ts) for the rules and graph traversal.
+
+## Correction, fallback and cancellation
+
+[generateWithFallback](../server/src/routes/ai.ts#L28) allows one correction attempt per model when parsing or validation fails. It supplies the issues and previous candidate to the next attempt. Provider failures move directly to the next configured model. Attempts share a 50-second budget, with each provider request capped at 20 seconds or the remaining budget.
+
+The model list uses `GEMINI_MODEL` when supplied, then the fallback names declared in `ai.ts`. A missing `GEMINI_API_KEY` returns a configuration error. Exhausted or invalid generation returns an error to the interface, where the draft can be retained for retry. This is a provider/model fallback flow; there is no production `generateFallbackPlan` that silently creates a generic replacement project.
+
+The frontend API combines its timeout with the caller's cancellation signal. Returning to editing aborts the browser's pending request. These controls are in [api.ts](../frontend/src/services/api.ts) and [CreateProjectFlow.tsx](../frontend/src/pages/projects/create/CreateProjectFlow.tsx).
+
+## Human confirmation and persistence
+
+Generation and refinement return draft JSON. They do not create project records. The coordinator reviews the proposed work and chooses whether to proceed to final confirmation.
+
+Confirmation calls `POST /api/projects`. A backend transaction creates the project, owner membership, team profiles, milestones and tasks. It maps temporary names and milestone identifiers to database IDs and converts relative due days into dates.
+
+The confirmation flow currently omits generated dependency links, and relative start days are not stored as dedicated task fields. The relevant follow-up is to persist this planning information alongside existing tasks.
+
+## Configuration and verification
+
+- `GEMINI_API_KEY`: backend planning credential.
+- `GEMINI_MODEL`: optional first model; fallback names are defined in the route.
+- `npm test --prefix server`: 12 planning regression tests, including validation, correction, provider fallback and time budgets.
+- `npm test --prefix frontend`: 17 API, summary and team-identity tests.
+
+Planning tests use controlled provider responses. Legacy `server/test-*.ts` and `server/test-*.js` probes are separate from `server/tests/planning.test.ts`; some reflect earlier provider experiments. The [main README](../README.md) describes the rest of the application engineering and user workflow.
